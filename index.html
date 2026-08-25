@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Зрение · тренажер по методу Бейтса</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+<style>
+:root{
+  --bg:#faf6ef; --card:#ffffff; --ink:#26333a; --muted:#6b7b84; --accent:#2a7f78;
+  --accent-soft:#e2f0ee; --gold:#c9a227; --line:#e7e0d3; --done:#3a9d5d; --shadow:0 2px 10px rgba(38,51,58,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#161d21; --card:#1f282e; --ink:#e8eef1; --muted:#93a4ad; --accent:#4fb3a9;
+    --accent-soft:#24413e; --line:#2c3940; --shadow:0 2px 10px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box; margin:0}
+body{background:var(--bg); color:var(--ink); font-family:Georgia,'Times New Roman',serif; line-height:1.5; padding-bottom:78px}
+header{padding:20px 16px 8px; text-align:center}
+header h1{font-size:1.35rem; font-weight:600}
+header .sub{color:var(--muted); font-size:.85rem}
+main{max-width:640px; margin:0 auto; padding:8px 14px}
+nav{position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--line);
+  display:flex; justify-content:space-around; padding:6px 2px calc(6px + env(safe-area-inset-bottom)); z-index:20}
+nav button{background:none; border:none; color:var(--muted); font-family:inherit; font-size:.72rem; cursor:pointer; padding:4px 6px}
+nav button .ico{display:block; font-size:1.25rem; line-height:1.2}
+nav button.act{color:var(--accent); font-weight:700}
+.card{background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:16px; margin:12px 0}
+.card h2{font-size:1.05rem; margin-bottom:6px}
+.badge{display:inline-block; background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:2px 10px; font-size:.75rem; margin-bottom:6px}
+.muted{color:var(--muted); font-size:.85rem}
+.btn{display:inline-block; background:var(--accent); color:#fff; border:none; border-radius:10px;
+  font-family:inherit; font-size:1rem; padding:10px 18px; cursor:pointer}
+.btn.sec{background:var(--accent-soft); color:var(--accent)}
+.btn.ghost{background:none; color:var(--muted); border:1px solid var(--line)}
+.btn:disabled{opacity:.45; cursor:default}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.sess-done{color:var(--done); font-weight:700}
+.streak{font-size:.9rem}
+.exlist{margin:8px 0 0 0; padding:0; list-style:none}
+.exlist li{padding:3px 0; font-size:.9rem; color:var(--muted)}
+.exlist li b{color:var(--ink); font-weight:600}
+/* player */
+#player{position:fixed; inset:0; background:var(--bg); z-index:50; display:none; overflow-y:auto}
+#player.open{display:block}
+#player .inner{max-width:640px; margin:0 auto; padding:18px 16px 40px}
+#pbar{height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin:10px 0}
+#pbar div{height:100%; background:var(--accent); width:0%; transition:width .5s linear}
+#ptime{font-size:3.4rem; text-align:center; font-variant-numeric:tabular-nums; margin:6px 0}
+#pex h2{font-size:1.3rem; margin:4px 0}
+#pex .steps{margin:10px 0 0 18px}
+#pex .steps li{margin:7px 0}
+#pex .tip{background:var(--accent-soft); border-radius:10px; padding:10px 12px; margin-top:12px; font-size:.9rem}
+#pex .src{color:var(--muted); font-size:.78rem; margin-top:10px; font-style:italic}
+.pctl{display:flex; gap:8px; justify-content:center; margin:14px 0; flex-wrap:wrap}
+/* chart */
+.chartwrap{background:#fff; color:#111; border-radius:12px; padding:22px 8px; text-align:center; overflow-x:auto}
+.chartlines{display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:14px}
+.chartlines .dot{width:12px; height:12px; border-radius:50%; background:#111; flex:none}
+.chartlines .ln{height:5px; background:#111; flex:1; max-width:78%}
+.crow{font-family:Arial,Helvetica,sans-serif; font-weight:bold; letter-spacing:.35em; line-height:1.25; white-space:nowrap}
+.fineprint{background:#fff; color:#111; border-radius:12px; padding:18px; text-align:left}
+.fineprint p{margin:8px 0; font-family:Georgia,serif}
+.jgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin:10px 0}
+.jday{aspect-ratio:1; border-radius:9px; background:var(--accent-soft); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; font-size:.7rem; color:var(--muted)}
+.jday .m{font-size:.85rem; line-height:1}
+.jday.full{background:var(--accent); color:#fff}
+.jday.half{background:var(--gold); color:#fff}
+input,select,textarea{font-family:inherit; font-size:.95rem; color:var(--ink); background:var(--bg);
+  border:1px solid var(--line); border-radius:8px; padding:8px}
+label{font-size:.85rem; color:var(--muted); display:block; margin-top:8px}
+.check-item{border-bottom:1px solid var(--line); padding:8px 0; font-size:.9rem}
+.warn{background:#fdf0e7; color:#8a4b15; border-radius:10px; padding:10px 12px; font-size:.88rem; margin:10px 0}
+@media (prefers-color-scheme: dark){ .warn{background:#3d2c1c; color:#f0c9a4} }
+.view{display:none}
+.view.act{display:block}
+h3{font-size:1rem; margin:14px 0 4px}
+#view-info p, #view-info li{font-size:.92rem; margin:6px 0}
+#view-info ul{margin-left:18px}
+@media print{
+  body *{display:none!important}
+  #printzone, #printzone *{display:block!important}
+  #printzone{position:absolute; top:0; left:0; width:100%}
+  #printzone .crow{display:block!important; font-family:Arial,sans-serif; font-weight:bold; letter-spacing:.3em; text-align:center; color:#000}
+  #printzone .chartlines{display:flex!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>👁 Тренажер зрения</h1>
+  <div class="sub">по книге У. Бейтса и М. Корбетт · близорукость и астигматизм</div>
+</header>
+
+<main>
+<!-- ======== СЕГОДНЯ ======== -->
+<section id="view-today" class="view act">
+  <div class="card" id="todaycard"></div>
+  <div class="card" id="morningcard"></div>
+  <div class="card" id="eveningcard"></div>
+  <div class="card muted" style="font-size:.82rem">
+    Метод Бейтса не признан доказательной медициной. Тренажер — дополнение к наблюдению у офтальмолога,
+    а не замена ему. При боли или дискомфорте — прекратите упражнение.
+  </div>
+</section>
+
+<!-- ======== ТАБЛИЦА ======== -->
+<section id="view-chart" class="view">
+  <div class="card">
+    <h2>Таблица RNE</h2>
+    <p class="muted">Из книги М. Корбетт (гл. 3). Строки по вертикали складываются в
+    «RELAXATION NORMALIZES EYE TROUBLE» — «расслабление устраняет недостатки зрения».
+    Повесьте распечатку на хорошо освещённую стену и сядьте в ~2 метрах, или откройте эту
+    страницу на большом экране и отойдите. Не проверяйте по ней зрение — просто занимайтесь.</p>
+    <div class="row" style="margin:8px 0">
+      <button class="btn sec" onclick="window.print()">🖨 Распечатать (реальные размеры)</button>
+      <label style="margin:0">Масштаб на экране
+        <input type="range" min="30" max="130" value="70" id="cscale" oninput="renderChart()"></label>
+    </div>
+  </div>
+  <div class="chartwrap" id="chartzone"></div>
+</section>
+
+<!-- ======== ШРИФТ ======== -->
+<section id="view-fine" class="view">
+  <div class="card">
+    <h2>Карточка мелкого шрифта</h2>
+    <p class="muted">Бейтс, гл. 14 и 24: чтение мелкого шрифта, когда оно даётся без дискомфорта, полезно —
+    его невозможно прочитать без расслабления. Держите карточку как можно ближе к глазам, свет может быть
+    неярким. Читайте без усилия; если строка не читается — просто скользите взглядом по белым полосам между строк.</p>
+  </div>
+  <div class="fineprint" id="finezone"></div>
+</section>
+
+<!-- ======== ДНЕВНИК ======== -->
+<section id="view-journal" class="view">
+  <div class="card">
+    <h2>Дневник занятий</h2>
+    <div id="jstats" class="streak"></div>
+    <div class="jgrid" id="jgrid"></div>
+    <p class="muted">Зелёный — оба занятия, золотой — одно.</p>
+  </div>
+  <div class="card">
+    <h2>Самопроверка (раз в неделю)</h2>
+    <p class="muted">По Бейтсу (гл. 20): отмечайте, какую строку таблицы видите и с какого расстояния, каждым глазом
+    отдельно (второй прикрыт ладонью без давления). Ещё лучший критерий — кажутся ли буквы одинаково чёрными
+    вблизи и вдали.</p>
+    <label>Строка таблицы RNE (1 — верхняя, 10 — нижняя)
+      <input type="number" id="ckline" min="1" max="10" value="5" style="width:90px"></label>
+    <label>Расстояние, м <input type="number" id="ckdist" min="0.5" max="10" step="0.5" value="2" style="width:90px"></label>
+    <label>Глаз
+      <select id="ckeye"><option>оба</option><option>левый</option><option>правый</option></select></label>
+    <label>Заметка (чернота букв, чёткость…) <input type="text" id="cknote" style="width:100%"></label>
+    <div style="margin-top:10px"><button class="btn sec" onclick="saveCheck()">Записать</button></div>
+    <div id="checklist" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ======== ПАМЯТКА ======== -->
+<section id="view-info" class="view">
+  <div class="card">
+    <h2>Главное из книги</h2>
+    <p><b>«Покой всегда улучшает зрение. Усилие всегда его ухудшает»</b> (Бейтс, гл. 24).
+    Зрение портит не работа глаз, а напряжение и «усилие увидеть». Всё в этом тренажере — способы расслабления.</p>
+    <h3>Правильные привычки зрения (в течение всего дня)</h3>
+    <ul>
+      <li><b>Моргайте</b> часто и легко, не пяльтесь в одну точку.</li>
+      <li><b>Перемещайте взгляд</b>: «когда глаз перемещается — он видит». Поворачивайте нос туда, куда смотрите.</li>
+      <li><b>Дышите</b> глубоко и непрерывно, особенно при зрительной работе.</li>
+      <li><b>Отдых</b>: почаще закрывайте глаза хоть на несколько секунд; пальминг «понемногу, но часто» — даже 10 секунд помогают.</li>
+      <li>«Письмо носом» — первая помощь при напряжении в течение дня.</li>
+      <li>Не щурьтесь — давление на глазные яблоки усиливает напряжение.</li>
+      <li>За экраном: пусть взгляд путешествует, в паузах закрывайте глаза, проветривайте комнату.</li>
+    </ul>
+    <h3>Про очки (по Корбетт, для близоруких)</h3>
+    <ul>
+      <li>Очки не выбрасывать: это «костыли», пока не построено компенсирующее зрение.</li>
+      <li><b>За рулём — всегда в очках</b>, пока ограничение не снимет медкомиссия.</li>
+      <li>Без очков: спокойные ситуации — одеться утром, завтрак, поездка пассажиром, прогулка по знакомым местам.</li>
+      <li>Стало лучше — попросите врача выписать более слабые очки: старые будут напрягать глаза.</li>
+    </ul>
+    <h3>Ход занятий</h3>
+    <ul>
+      <li><b>Первая неделя</b> — только четыре базовых упражнения расслабления (соляризация, пальминг, повороты,
+        мысленное представление). Так велит Корбетт, гл. 1.</li>
+      <li>Дальше — утренний комплекс и вечерняя работа с таблицей (упражнения чередуются по дням).</li>
+      <li>Если упражнение после одной-двух попыток не даёт результата — отложите его и возьмите другое (Бейтс, гл. 12).</li>
+      <li>Прогресс идёт волнами: за улучшением бывает затишье — это нормально (Корбетт, гл. 10).</li>
+      <li>Заниматься — пока правильные привычки не станут подсознательными; затем достаточно поддерживающих
+        пальминга и соляризации.</li>
+    </ul>
+    <h3>Предостережения</h3>
+    <div class="warn">☀️ Соляризация в тренажере — <b>только с закрытыми глазами</b>. В книге есть этапы со взглядом
+    на солнце открытыми глазами — они сюда сознательно не включены: современная офтальмология считает взгляд на
+    солнце опасным для сетчатки. Прекращайте соляризацию при любом неприятном ощущении.</div>
+    <ul>
+      <li>Пальминг — без давления на глазные яблоки; не «всматривайтесь» внутрь глаз, вспоминайте приятное.</li>
+      <li>Если при пальминге вместо черноты — цветные пятна, не боритесь с ними усилием: дайте мыслям блуждать по
+        приятным воспоминаниям (Бейтс, гл. 9).</li>
+      <li>Головокружение при поворотах — значит, «оставляете глаза позади»: голова, плечи и взгляд двигаются вместе.</li>
+      <li>Тренажер не заменяет врача. Ухудшение зрения, боль, вспышки, «шторка» — повод обратиться к офтальмологу.</li>
+    </ul>
+    <h3>Настройки</h3>
+    <label>Дата начала программы <input type="date" id="setstart" onchange="setStart(this.value)"></label>
+    <p class="muted">От неё считается «первая неделя» и чередование упражнений.</p>
+  </div>
+</section>
+</main>
+
+<!-- ======== ПЛЕЕР ======== -->
+<div id="player"><div class="inner">
+  <div class="row" style="justify-content:space-between">
+    <b id="ptitle"></b>
+    <button class="btn ghost" onclick="closePlayer()">✕ выйти</button>
+  </div>
+  <div id="pbar"><div></div></div>
+  <div class="muted" id="pstep"></div>
+  <div id="ptime">0:00</div>
+  <div class="pctl">
+    <button class="btn" id="ppause" onclick="togglePause()">⏸ пауза</button>
+    <button class="btn sec" onclick="addTime(30)">+30 сек</button>
+    <button class="btn sec" onclick="nextEx()">дальше ▸</button>
+  </div>
+  <div id="pex" class="card"></div>
+</div></div>
+
+<!-- печатная версия таблицы -->
+<div id="printzone" style="display:none"></div>
+
+<script>
+/* ===================== данные упражнений (по книге) ===================== */
+const EX = {
+  wake: {t:'Пробуждение глаз', d:60, src:'Корбетт, гл. 2 — утренний комплекс',
+    steps:['Широко раскройте глаза и рот 4 раза (во сне челюсти и веки часто стиснуты).',
+      'Крепко зажмурьтесь 6 раз.',
+      'Сделайте 12 лёгких морганий — как взмахи крыльев бабочки.',
+      'Поднимите брови до ощущения в верхней части ушей, отпустите. Пару раз.'],
+    tip:'Весь день моргайте часто и легко.'},
+  nose: {t:'«Письмо носом»', d:60, src:'Корбетт, гл. 2',
+    steps:['Закройте глаза. Представьте, что нос — длинная ручка.',
+      'Пишите носом в воздухе слова: сегодня, например, города на каждую букву алфавита; в другие дни — цветы, страны, продукты.',
+      'Движения мягкие, дыхание глубокое.'],
+    tip:'Снимает напряжение у основания черепа. Это и «первая помощь» при усталости глаз днём.'},
+  finger: {t:'Пальцевые повороты', d:60, src:'Корбетт, гл. 1',
+    steps:['Поставьте указательный палец перед носом.',
+      'Мягко поворачивайте голову из стороны в сторону, глядя МИМО пальца, а не на него — палец «задвигается».',
+      'Сделайте 20–30 поворотов, часть — с закрытыми глазами (кончик носа касается пальца).',
+      'Помните о дыхании.'],
+    tip:'Нет иллюзии движения? Растопырьте пальцы «частоколом» перед лицом и поворачивайте голову, глядя сквозь них вдаль.'},
+  bigswing: {t:'Большие повороты', d:120, src:'Корбетт, гл. 1; Бейтс, гл. 24',
+    steps:['Встаньте лицом к окну, ступни на ширине ~30 см.',
+      'Перенося вес на левую ногу, поверните плечи, голову и взгляд к левой стене; затем, перенося вес на правую, — к правой. Пятка отрывается от пола.',
+      'Ритм медленного вальса, можно напевать — это гарантирует дыхание.',
+      'Окна «проплывают» мимо в противоположную сторону — не цепляйтесь за них взглядом, «забирайте глаза с собой».',
+      'Счёт до 100: до 60-го поворота — достижение расслабления, с 60-го по 100-й — наслаждение им.'],
+    tip:'Это не физкультура, а расслабление. Головокружение = взгляд «прилип» — двигайте голову, плечи и глаза вместе.'},
+  sun: {t:'Соляризация (закрытые глаза)', d:60, src:'Корбетт, гл. 1; Бейтс, гл. 24 — здесь только щадящий вариант',
+    steps:['Подставьте ЗАКРЫТЫЕ глаза солнцу — на улице, на балконе или у открытого окна.',
+      'Мягко поворачивайте голову из стороны в сторону: «солнце приходит — солнце уходит».',
+      'Нет солнца — сядьте в ~1 м от яркой лампы и делайте то же самое.',
+      'При любом неприятном ощущении — прекратите и уйдите в тень.'],
+    tip:'Глаза не открывать! После соляризации всегда пальминг — вдвое дольше неё.'},
+  palm: {t:'Пальминг', d:120, src:'Бейтс, гл. 9; Корбетт, гл. 1',
+    steps:['Потрите ладони. Сложите их чашечками и накройте закрытые глаза: пальцы скрещены на лбу, давления на глазные яблоки нет, свет не проникает.',
+      'Локти обоприте о стол или подушку на коленях; шея на одной линии с позвоночником.',
+      'Вспоминайте приятное: путешествие, любимое место, музыку. Не думайте о глазах.',
+      'Идеал — ровное чёрное поле, но не добивайтесь его усилием: чернота приходит сама с расслаблением.'],
+    tip:'Отняв руки, заметьте: мир стал ярче. Днём делайте мини-пальминг «понемногу, но часто» — хоть 10 секунд.'},
+  imagine: {t:'Мысленное представление', d:120, src:'Корбетт, гл. 1; Бейтс, гл. 10–11',
+    steps:['Можно совместить с пальмингом. Представьте белый лист бумаги и ручку.',
+      'Нарисуйте мысленно: квадрат, на нём — второй, рядом прямоугольники, треугольник, кружок; комбинируйте (кружок в квадрате, шарик катается по прямоугольнику).',
+      'Затем вспомните маленькую чёрную точку или букву. Не удерживайте её силой — пусть «покачивается».',
+      'Если устали — просто перебирайте приятные воспоминания.'],
+    tip:'Чёрная точка — «манометр» расслабления: вспоминается легко, значит психика в покое (Бейтс).'},
+  blink: {t:'Проблески', d:60, src:'Бейтс, гл. 24',
+    steps:['Дайте глазам отдохнуть: закройте их на несколько секунд или сделайте короткий пальминг.',
+      'Откройте глаза на ДОЛЮ секунды, взгляните на букву таблицы (или любой объект) — и сразу закройте.',
+      'Повторяйте: отдых — мгновенный взгляд — отдых.',
+      'Закрывайте глаза раньше, чем успеет включиться привычка напрягаться.'],
+    tip:'Так ловятся «проблески» ясного зрения, которые постепенно сливаются.'},
+  /* --- вечерняя ротация с таблицей --- */
+  rne: {t:'Таблица RNE — чтение без усилия', d:180, src:'Корбетт, гл. 3, упражнение 2',
+    steps:['Откройте таблицу RNE (вкладка «Таблица», можно распечатку). Сядьте там, откуда верхняя строка видна чётко.',
+      'Сначала соляризация уже сделана? Хорошо. Закройте глаза, вспомните буквы второй строки, «напишите» их носом.',
+      'Глубокий вдох — на выдохе откройте глаза и скользните взглядом ПОД буквами, по белой полосе. Буквы могут проблеснуть чётче.',
+      'Не вышло — закройте глаза, напишите буквы пальцем на ладони, посмотрите снова. Всё ещё нет — пересядьте ближе: цель достигается лёгким зрением, не напряжённым.',
+      'Пройдите 4–5 строк за занятие. Между строками закрывайте глаза и мягко поворачивайте голову.'],
+    tip:'Не проверяйте по таблице зрение — нужно чувство безразличия к тому, что хочется увидеть.'},
+  sniper: {t:'«Меткий стрелок»', d:180, src:'Корбетт, гл. 3, упражнение 3',
+    steps:['Понадобится линейка или палка ~1 м. Сядьте перед таблицей RNE.',
+      'Один конец линейки у носа, другой направьте на верхнюю строку.',
+      '«Приготовиться!» — моргните, глядя на ближний конец линейки.',
+      '«Целься!» — скользните взглядом и вниманием вдоль линейки к дальнему концу, всё время моргая.',
+      '«Огонь!» — перелетите взглядом остаток пути до буквы R.',
+      'Закройте глаза, поверните голову несколько раз, дышите. Повторите для N, отдохните, затем для E.'],
+    tip:'Тренирует фокусировку и централизацию. Ближе к мелким строкам — вставляйте пальминг.'},
+  shuttle: {t:'«Челнок» — раскачивание буквы', d:180, src:'Корбетт, гл. 3, упражнение 5',
+    steps:['Сядьте близко к таблице — чтобы верхняя строка была видна, но не идеально чётко.',
+      'Закройте глаза, вспомните букву R. Откройте: направьте нос на белое поле СЛЕВА от буквы, затем СПРАВА, и так взад-вперёд в бодром темпе.',
+      'Буква начнёт «уходить» в противоположную сторону — покачиваться, вибрировать. Добивайтесь этой иллюзии, она означает расслабление.',
+      'То же с N и E. Затем закройте глаза, «напишите» буквы носом.',
+      'С хорошим вдохом прочитайте строки ниже, пока комфортно. После каждой строки — короткий пальминг.'],
+    tip:'Смотрение на пустой фон не требует усилия — за счёт этого буква становится чётче.'},
+  bates_swing: {t:'Перемещение по Бейтсу', d:180, src:'Бейтс, гл. 12, упражнения 1–3',
+    steps:['Смотрите на букву на таблице. Переведите взгляд на другую букву той же строки, подальше — первая станет видна хуже.',
+      'Вернитесь к первой — теперь хуже видна вторая. Попеременно несколько секунд: буквы «закачаются» из стороны в сторону.',
+      'Теперь вертикально: взгляд выше буквы — потом ниже неё, 6 раз. Буква качается вверх-вниз.',
+      'Постепенно укорачивайте перемещение: от верха буквы к её низу, сохраняя качание.',
+      'Не вышло за пару попыток — отдых, пальминг, попробуйте снова или отложите до завтра.'],
+    tip:'Качание — свидетельство правильного перемещения; когда оно есть, зрение улучшается (Бейтс).'},
+  central: {t:'Центральная фиксация', d:180, src:'Бейтс, гл. 8 и 24',
+    steps:['Посмотрите на большую букву R с комфортного расстояния.',
+      'Переведите взгляд с её верха на низ и заметьте: часть, на которую вы НЕ смотрите прямо, видна хуже. Это нормально и правильно.',
+      'Спускайтесь по строкам, повторяя то же с буквами поменьше: смотреть на низ буквы, «отпуская» верх.',
+      'Чем меньше буква, с которой это удаётся, тем глубже расслабление — буква видится чернее и чётче.',
+      'В конце — минутка проблесков: отдых с закрытыми глазами, мгновенный взгляд, снова отдых.'],
+    tip:'Полезнее думать «остальное видно хуже», чем «эта точка видна лучше» (Бейтс, гл. 8).'},
+  fineread: {t:'Мелкий шрифт вблизи', d:180, src:'Бейтс, гл. 14, 24; Корбетт, гл. 11',
+    steps:['Откройте вкладку «Шрифт» на телефоне или возьмите распечатку карточки.',
+      'Держите текст так близко к глазам, как удобно; свет может быть неярким.',
+      'Читайте сверху вниз без малейшего усилия, моргая на знаках препинания.',
+      'Строка не читается? Не старайтесь! Скользите взглядом по белым полосам между строк, представляя их чисто-белыми.',
+      'Закончите взглядом вдаль — в окно, на дальнюю стену — и парой глубоких вдохов.'],
+    tip:'Мелкий шрифт невозможно прочитать без расслабления — потому он и лечит (а усилие никогда не приносит успеха).'}
+};
+
+/* ===================== программы ===================== */
+const ROTATION = ['rne','sniper','shuttle','bates_swing','central','fineread'];
+const ROT_NAMES = {rne:'Таблица RNE', sniper:'«Меткий стрелок»', shuttle:'«Челнок»',
+  bates_swing:'Перемещение по Бейтсу', central:'Центральная фиксация', fineread:'Мелкий шрифт'};
+
+function program(kind, dayN){
+  if(dayN <= 7){ /* первая неделя — только базовые упражнения расслабления (Корбетт, гл. 1) */
+    return kind==='m'
+      ? ['sun','palm','finger','bigswing']
+      : ['bigswing','imagine','palm'];
+  }
+  if(kind==='m') return ['wake','nose','finger','bigswing','sun','palm'];
+  const rot = ROTATION[(dayN - 8) % ROTATION.length];
+  return [rot,'bigswing','palm'];
+}
+const SESSION_TITLES = {m:'☀️ Утреннее занятие', e:'🌙 Вечернее занятие'};
+
+/* ===================== состояние ===================== */
+const LS='vt2_state';
+let S = JSON.parse(localStorage.getItem(LS)||'null') || {start: today(), log:{}, checks:[]};
+function save(){ localStorage.setItem(LS, JSON.stringify(S)); }
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dayNum(){ const ms = new Date(today()) - new Date(S.start); return Math.max(1, Math.round(ms/86400000)+1); }
+function setStart(v){ if(v){ S.start=v; save(); renderToday(); } }
+
+/* ===================== экран «Сегодня» ===================== */
+function fmtDur(ids){ const s=ids.reduce((a,i)=>a+EX[i].d,0); return Math.round(s/60)+' мин'; }
+function renderToday(){
+  const dn = dayNum(), t = today(), log = S.log[t]||{};
+  const phase = dn<=7 ? 'Базовая неделя расслабления — день '+dn+' из 7' : 'Основная программа — день '+dn;
+  let streak=0; for(let i=0;;i++){ const d=new Date(Date.now()-i*86400000), k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const l=S.log[k]; if(l&&(l.m||l.e)) streak++; else if(i===0) continue; else break; }
+  document.getElementById('todaycard').innerHTML =
+    '<span class="badge">'+phase+'</span>'+
+    '<div class="streak">🔥 Дней подряд: <b>'+streak+'</b></div>'+
+    (dn>7 ? '<div class="muted">Сегодня в вечерней ротации: <b>'+ROT_NAMES[ROTATION[(dn-8)%ROTATION.length]]+'</b></div>' : '');
+  for(const [kind, el] of [['m','morningcard'],['e','eveningcard']]){
+    const ids = program(kind, dn), done = !!log[kind];
+    document.getElementById(el).innerHTML =
+      '<h2>'+SESSION_TITLES[kind]+' · '+fmtDur(ids)+(done?' <span class="sess-done">✓ выполнено</span>':'')+'</h2>'+
+      '<ul class="exlist">'+ids.map(i=>'<li><b>'+EX[i].t+'</b> · '+Math.round(EX[i].d/60*10)/10+' мин</li>').join('')+'</ul>'+
+      '<div style="margin-top:10px"><button class="btn'+(done?' sec':'')+'" onclick="startSession(\''+kind+'\')">'+
+      (done?'Повторить':'Начать')+'</button></div>';
+  }
+  const st=document.getElementById('setstart'); if(st) st.value=S.start;
+}
+
+/* ===================== плеер ===================== */
+let P=null;
+function startSession(kind){
+  P={kind, ids:program(kind, dayNum()), i:0, left:0, paused:false, timer:null};
+  document.getElementById('ptitle').textContent = SESSION_TITLES[kind];
+  document.getElementById('player').classList.add('open');
+  loadEx();
+}
+function loadEx(){
+  const ex = EX[P.ids[P.i]];
+  P.left = ex.d; P.total = ex.d; P.paused=false;
+  document.getElementById('pstep').textContent = 'Упражнение '+(P.i+1)+' из '+P.ids.length;
+  document.getElementById('pex').innerHTML = '<h2>'+ex.t+'</h2><ol class="steps">'+
+    ex.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
+    (ex.tip?'<div class="tip">💡 '+ex.tip+'</div>':'')+
+    '<div class="src">Источник: '+ex.src+'</div>';
+  document.getElementById('ppause').textContent='⏸ пауза';
+  tickRender();
+  clearInterval(P.timer);
+  P.timer = setInterval(()=>{ if(P.paused) return; P.left--; tickRender();
+    if(P.left<=0){ beep(); nextEx(); } }, 1000);
+}
+function tickRender(){
+  const m=Math.floor(Math.max(0,P.left)/60), s=Math.max(0,P.left)%60;
+  document.getElementById('ptime').textContent = m+':'+String(s).padStart(2,'0');
+  document.querySelector('#pbar div').style.width = (100*(1-P.left/P.total))+'%';
+}
+function togglePause(){ P.paused=!P.paused; document.getElementById('ppause').textContent = P.paused?'▶ дальше':'⏸ пауза'; }
+function addTime(n){ P.left+=n; P.total+=n; tickRender(); }
+function nextEx(){
+  if(P.i < P.ids.length-1){ P.i++; loadEx(); }
+  else finishSession();
+}
+function finishSession(){
+  clearInterval(P.timer);
+  const t=today(); S.log[t]=S.log[t]||{}; S.log[t][P.kind]=true; save();
+  document.getElementById('pex').innerHTML = '<h2>Готово! 🎉</h2><p>Занятие записано в дневник.</p>'+
+    '<p class="muted">Как сегодня виделось?</p><div class="row">'+
+    ['😣 тяжело','🙂 обычно','✨ яснее'].map((l,i)=>'<button class="btn sec" onclick="rate('+i+')">'+l+'</button>').join('')+'</div>';
+  document.getElementById('ptime').textContent='✓';
+  document.querySelector('#pbar div').style.width='100%';
+}
+function rate(r){ const t=today(); S.log[t].r=r; save(); closePlayer(); }
+function closePlayer(){ if(P) clearInterval(P.timer); P=null;
+  document.getElementById('player').classList.remove('open'); renderToday(); renderJournal(); }
+function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)();
+  const o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination);
+  o.frequency.value=660; g.gain.value=.12; o.start();
+  o.stop(a.currentTime+.35); }catch(e){} }
+
+/* ===================== таблица RNE ===================== */
+const ROWS=[['R N E',3],['E O Y',2],['L R E',1.75],['A M T',1.5],['X A R',1],
+  ['A L O',.875],['T I U',.8],['I Z B',.5],['O E L',.45],['N S E',.25]];
+function chartHTML(unit){ /* unit: px на дюйм */
+  let h='<div class="chartlines"><span class="dot"></span><span class="ln"></span><span class="dot"></span></div>';
+  for(const [txt,inch] of ROWS)
+    h+='<div class="crow" style="font-size:'+(unit?inch*unit+'px':inch+'in')+'; margin:'+(unit?inch*unit*.25+'px':inch*.25+'in')+' 0">'+txt+'</div>';
+  return h;
+}
+function renderChart(){
+  const sc = document.getElementById('cscale').value;
+  document.getElementById('chartzone').innerHTML = chartHTML(Number(sc));
+  document.getElementById('printzone').innerHTML =
+    '<div style="text-align:center; font-family:Arial">'+chartHTML(null)+
+    '<p style="font-size:10pt; margin-top:24pt">RELAXATION&nbsp;·&nbsp;NORMALIZES&nbsp;·&nbsp;EYE&nbsp;TROUBLE — читается по вертикали.<br>'+
+    'Повесьте на хорошо освещённую стену. Таблица RNE из книги М. Корбетт, гл. 3.</p></div>';
+}
+
+/* ===================== мелкий шрифт ===================== */
+const FINE=[
+  [14,'Покой всегда улучшает зрение. Усилие всегда его ухудшает.'],
+  [12,'Моргайте часто и легко. Поворачивайте нос туда, куда смотрите.'],
+  [10,'Дышите глубоко: напряжение глаз стесняет дыхание, а дыхание снимает напряжение.'],
+  [9,'Когда глаз перемещается, он видит. Зрение пристально смотрящего глаза слабеет.'],
+  [8,'Чёрная точка вспоминается легко только спокойной психикой — это манометр расслабления.'],
+  [7,'Пальминг понемногу, но часто: даже десять секунд возвращают чувство расслабления.'],
+  [6,'Чем ближе к глазам удаётся держать этот текст и чем мягче свет, тем больше пользы от чтения.'],
+  [5,'Мелкий шрифт невозможно прочитать с усилием — он читается только расслабленными глазами, потому и лечит.'],
+  [4,'Если эта строка не читается — не старайтесь. Скользите взглядом по белой полосе под буквами и представляйте её чисто-белой.'],
+  [3.5,'Совершенное зрение приходит проблесками; проблески учащаются и сливаются, когда вы перестаёте стараться увидеть.']
+];
+function renderFine(){
+  document.getElementById('finezone').innerHTML =
+    FINE.map(([pt,txt])=>'<p style="font-size:'+pt+'pt">'+txt+'</p>').join('');
+}
+
+/* ===================== дневник ===================== */
+function renderJournal(){
+  const g=document.getElementById('jgrid'); let html='';
+  let total=0; for(const k in S.log){ if(S.log[k].m||S.log[k].e) total++; }
+  for(let i=20;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const l=S.log[k]||{}; const cls = l.m&&l.e?'full':(l.m||l.e?'half':'');
+    html+='<div class="jday '+cls+'"><span class="m">'+d.getDate()+'</span><span>'+
+      (l.m?'☀':'')+(l.e?'🌙':'')+'</span></div>';
+  }
+  g.innerHTML=html;
+  document.getElementById('jstats').innerHTML='Всего дней с занятиями: <b>'+total+'</b>';
+  document.getElementById('checklist').innerHTML = S.checks.slice().reverse().map(c=>
+    '<div class="check-item"><b>'+c.d+'</b> · '+c.eye+' глаз'+(c.eye==='оба'?'а':'')+': строка '+c.line+' с '+c.dist+' м'+
+    (c.note?' — <i>'+c.note+'</i>':'')+'</div>').join('') || '<p class="muted">Записей пока нет.</p>';
+}
+function saveCheck(){
+  S.checks.push({d:today(), line:document.getElementById('ckline').value,
+    dist:document.getElementById('ckdist').value, eye:document.getElementById('ckeye').value,
+    note:document.getElementById('cknote').value.trim()});
+  save(); document.getElementById('cknote').value=''; renderJournal();
+}
+
+/* ===================== навигация ===================== */
+function show(v, btn){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('act'));
+  document.getElementById('view-'+v).classList.add('act');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  window.scrollTo(0,0);
+}
+renderToday(); renderChart(); renderFine(); renderJournal();
+</script>
+
+<nav>
+  <button class="act" onclick="show('today',this)"><span class="ico">🏠</span>Сегодня</button>
+  <button onclick="show('chart',this)"><span class="ico">🔠</span>Таблица</button>
+  <button onclick="show('fine',this)"><span class="ico">🔍</span>Шрифт</button>
+  <button onclick="show('journal',this)"><span class="ico">📅</span>Дневник</button>
+  <button onclick="show('info',this)"><span class="ico">📖</span>Памятка</button>
+</nav>
+</body>
+</html>

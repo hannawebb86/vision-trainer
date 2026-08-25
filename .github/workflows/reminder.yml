@@ -1,0 +1,34 @@
+name: Напоминания о тренировке зрения
+
+on:
+  schedule:
+    # Время в UTC. Тихоокеанское время: лето (PDT) = UTC-7, зима (PST) = UTC-8.
+    - cron: '0 15 * * *'   # утро: 8:00 PDT (лето) / 7:00 PST (зима)
+    - cron: '30 3 * * *'   # вечер: 20:30 PDT (лето) / 19:30 PST (зима)
+  workflow_dispatch: {}     # ручной запуск для проверки
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Отправить напоминание в Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PAGE_URL: ${{ vars.PAGE_URL }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "Секреты TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — пропускаю."
+            exit 0
+          fi
+          URL="${PAGE_URL:-https://ВАШ_ЛОГИН.github.io/vision-trainer/}"
+          H=$(date -u +%H)
+          if [ "$H" -lt 12 ]; then
+            TEXT="🌙 Вечернее занятие для глаз (~7 минут): упражнение с таблицей, большие повороты и пальминг перед сном. Открыть тренажер: $URL"
+          else
+            TEXT="☀️ Доброе утро! Утренний комплекс для глаз (~8 минут): пробуждение глаз, письмо носом, повороты, соляризация и пальминг. Открыть тренажер: $URL"
+          fi
+          curl -s -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" >/dev/null
+          echo "Отправлено."
