@@ -30,11 +30,11 @@
 1. Создайте на github.com новый **публичный** репозиторий `vision-trainer` (пустой, без README).
 2. Отправьте код:
    ```
-   git remote add origin https://github.com/ВАШ_ЛОГИН/vision-trainer.git
+   git remote add origin https://github.com/hannawebb86/vision-trainer.git
    git push -u origin master
    ```
 3. На GitHub: Settings → Pages → Source: «Deploy from a branch», Branch: `master`, папка `/ (root)` → Save.
-4. Через минуту тренажер будет доступен по адресу `https://ВАШ_ЛОГИН.github.io/vision-trainer/`.
+4. Через минуту тренажер будет доступен по адресу `https://hannawebb86.github.io/vision-trainer/`.
    Откройте его на телефоне и добавьте на главный экран.
 
 ## Напоминания в Telegram (один раз)

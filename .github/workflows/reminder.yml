@@ -21,7 +21,7 @@ jobs:
             echo "Секреты TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — пропускаю."
             exit 0
           fi
-          URL="${PAGE_URL:-https://ВАШ_ЛОГИН.github.io/vision-trainer/}"
+          URL="${PAGE_URL:-https://hannawebb86.github.io/vision-trainer/}"
           H=$(date -u +%H)
           if [ "$H" -lt 12 ]; then
             TEXT="🌙 Вечернее занятие для глаз (~7 минут): упражнение с таблицей, большие повороты и пальминг перед сном. Открыть тренажер: $URL"
