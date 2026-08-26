@@ -204,6 +204,20 @@ h3{font-size:1rem; margin:14px 0 4px}
     <h3>Настройки</h3>
     <label>Дата начала программы <input type="date" id="setstart" onchange="setStart(this.value)"></label>
     <p class="muted">От неё считается «первая неделя» и чередование упражнений.</p>
+    <h3>Синхронизация между устройствами</h3>
+    <p class="muted">Дневник хранится в приватном GitHub Gist вашего аккаунта и объединяется между телефоном
+    и компьютером (записи никогда не затираются, только дополняются). Нужен токен GitHub с единственным правом
+    <b>gist</b>: создайте его на странице
+    <a href="https://github.com/settings/tokens/new?scopes=gist&description=vision-trainer-sync" target="_blank">github.com/settings/tokens/new</a>
+    (право «gist» там уже отмечено, срок — на ваше усмотрение) и вставьте сюда на каждом устройстве.
+    Токен сохраняется только в браузере этого устройства.</p>
+    <label>GitHub-токен (право «gist») <input type="password" id="synctoken" autocomplete="off" style="width:100%"></label>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sec" onclick="enableSync()">Включить</button>
+      <button class="btn ghost" onclick="doSync(true)">Синхронизировать сейчас</button>
+      <button class="btn ghost" onclick="disableSync()">Отключить</button>
+    </div>
+    <div id="syncstatus" class="muted" style="margin-top:8px"></div>
   </div>
 </section>
 </main>
@@ -348,7 +362,7 @@ let S = JSON.parse(localStorage.getItem(LS)||'null') || {start: today(), log:{},
 function save(){ localStorage.setItem(LS, JSON.stringify(S)); }
 function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dayNum(){ const ms = new Date(today()) - new Date(S.start); return Math.max(1, Math.round(ms/86400000)+1); }
-function setStart(v){ if(v){ S.start=v; save(); renderToday(); } }
+function setStart(v){ if(v){ S.start=v; S.startT=Date.now(); save(); renderToday(); scheduleSync(); } }
 
 /* ===================== экран «Сегодня» ===================== */
 function fmtDur(ids){ const s=ids.reduce((a,i)=>a+EX[i].d,0); return Math.round(s/60)+' мин'; }
@@ -407,14 +421,14 @@ function nextEx(){
 }
 function finishSession(){
   clearInterval(P.timer);
-  const t=today(); S.log[t]=S.log[t]||{}; S.log[t][P.kind]=true; save();
+  const t=today(); S.log[t]=S.log[t]||{}; S.log[t][P.kind]=true; S.log[t].t=Date.now(); save(); scheduleSync();
   document.getElementById('pex').innerHTML = '<h2>Готово! 🎉</h2><p>Занятие записано в дневник.</p>'+
     '<p class="muted">Как сегодня виделось?</p><div class="row">'+
     ['😣 тяжело','🙂 обычно','✨ яснее'].map((l,i)=>'<button class="btn sec" onclick="rate('+i+')">'+l+'</button>').join('')+'</div>';
   document.getElementById('ptime').textContent='✓';
   document.querySelector('#pbar div').style.width='100%';
 }
-function rate(r){ const t=today(); S.log[t].r=r; save(); closePlayer(); }
+function rate(r){ const t=today(); S.log[t].r=r; S.log[t].t=Date.now(); save(); scheduleSync(); closePlayer(); }
 function closePlayer(){ if(P) clearInterval(P.timer); P=null;
   document.getElementById('player').classList.remove('open'); renderToday(); renderJournal(); }
 function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)();
@@ -476,11 +490,96 @@ function renderJournal(){
     (c.note?' — <i>'+c.note+'</i>':'')+'</div>').join('') || '<p class="muted">Записей пока нет.</p>';
 }
 function saveCheck(){
-  S.checks.push({d:today(), line:document.getElementById('ckline').value,
+  S.checks.push({id:Date.now()+'-'+Math.random().toString(36).slice(2,8),
+    d:today(), line:document.getElementById('ckline').value,
     dist:document.getElementById('ckdist').value, eye:document.getElementById('ckeye').value,
     note:document.getElementById('cknote').value.trim()});
-  save(); document.getElementById('cknote').value=''; renderJournal();
+  save(); document.getElementById('cknote').value=''; renderJournal(); scheduleSync();
 }
+
+/* ===================== синхронизация через GitHub Gist ===================== */
+const SYNCLS='vt2_sync', FNAME='vision-trainer-data.json';
+let SY = JSON.parse(localStorage.getItem(SYNCLS)||'null') || {};
+let syncTimer=null, syncBusy=false;
+function saveSy(){ localStorage.setItem(SYNCLS, JSON.stringify(SY)); }
+function syncMsg(m){ const el=document.getElementById('syncstatus'); if(el) el.textContent=m; }
+function gh(path, opts){ opts=opts||{};
+  return fetch('https://api.github.com'+path, Object.assign({}, opts, {headers: Object.assign({
+    'Authorization':'Bearer '+SY.token, 'Accept':'application/vnd.github+json'}, opts.headers||{})}));
+}
+function mergeState(a,b){
+  a=a||{}; b=b||{};
+  const out={start:a.start||b.start, startT:a.startT||0, log:{}, checks:[]};
+  const at=a.startT||0, bt=b.startT||0;
+  if(bt>at){ out.start=b.start; out.startT=bt; }
+  else if(bt===at && b.start && a.start && b.start<a.start){ out.start=b.start; } /* без явной установки — раньше начатая дата */
+  const dates=new Set(Object.keys(a.log||{}).concat(Object.keys(b.log||{})));
+  for(const d of dates){
+    const x=(a.log||{})[d]||{}, y=(b.log||{})[d]||{};
+    const newer=(x.t||0)>=(y.t||0)?x:y;
+    const e=Object.assign({}, newer);
+    if(x.m||y.m) e.m=true; if(x.e||y.e) e.e=true;
+    out.log[d]=e;
+  }
+  const seen={};
+  for(const c of (a.checks||[]).concat(b.checks||[])){
+    const id=c.id||(c.d+'|'+c.line+'|'+c.dist+'|'+c.eye);
+    if(!seen[id]){ seen[id]=1; out.checks.push(Object.assign({id:id}, c)); }
+  }
+  out.checks.sort((p,q)=>p.d<q.d?-1:p.d>q.d?1:0);
+  return out;
+}
+async function findOrCreateGist(){
+  const r = await gh('/gists?per_page=100');
+  if(!r.ok) throw new Error('токен не принят (HTTP '+r.status+')');
+  const arr = await r.json();
+  const g = arr.find(g=>g.files && g.files[FNAME]);
+  if(g){ SY.gistId=g.id; saveSy(); return; }
+  const c = await gh('/gists', {method:'POST', body: JSON.stringify({
+    description:'Тренажер зрения — дневник (создано автоматически)', public:false,
+    files:{[FNAME]:{content: JSON.stringify(S)}}})});
+  if(!c.ok) throw new Error('не удалось создать gist (HTTP '+c.status+'; токену нужно право gist)');
+  SY.gistId=(await c.json()).id; saveSy();
+}
+async function doSync(manual){
+  if(!SY.token){ if(manual) syncMsg('Синхронизация не включена: вставьте токен и нажмите «Включить».'); return; }
+  if(syncBusy) return; syncBusy=true;
+  try{
+    syncMsg('Синхронизация…');
+    if(!SY.gistId) await findOrCreateGist();
+    let r = await gh('/gists/'+SY.gistId);
+    if(r.status===404){ SY.gistId=null; saveSy(); await findOrCreateGist(); r = await gh('/gists/'+SY.gistId); }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const g = await r.json();
+    let remote={};
+    try{
+      const f=g.files[FNAME];
+      remote = f.truncated ? await (await fetch(f.raw_url)).json() : JSON.parse(f.content);
+    }catch(e){ remote={}; }
+    const merged = mergeState(S, remote);
+    S = merged; save();
+    if(JSON.stringify(remote)!==JSON.stringify(merged)){
+      const p = await gh('/gists/'+SY.gistId, {method:'PATCH', body: JSON.stringify({
+        files:{[FNAME]:{content: JSON.stringify(merged)}}})});
+      if(!p.ok) throw new Error('запись не удалась (HTTP '+p.status+')');
+    }
+    SY.last=Date.now(); saveSy();
+    syncMsg('✓ Синхронизировано '+new Date().toLocaleString());
+    renderToday(); renderJournal();
+  }catch(e){
+    syncMsg('⚠ Ошибка синхронизации: '+e.message+' (данные на устройстве целы)');
+  }finally{ syncBusy=false; }
+}
+function scheduleSync(){ if(!SY.token) return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>doSync(false), 1500); }
+function enableSync(){
+  const v=document.getElementById('synctoken').value.trim();
+  if(!v){ syncMsg('Вставьте токен в поле выше.'); return; }
+  SY.token=v; SY.gistId=null; saveSy();
+  document.getElementById('synctoken').value='';
+  doSync(true);
+}
+function disableSync(){ SY={}; saveSy(); syncMsg('Синхронизация отключена. Токен удалён с этого устройства, дневник остался.'); }
+function initSyncUI(){ if(SY.token) syncMsg(SY.last ? '✓ Включена, последняя синхронизация '+new Date(SY.last).toLocaleString() : 'Включена.'); }
 
 /* ===================== навигация ===================== */
 function show(v, btn){
@@ -490,7 +589,7 @@ function show(v, btn){
   btn.classList.add('act');
   window.scrollTo(0,0);
 }
-renderToday(); renderChart(); renderFine(); renderJournal();
+renderToday(); renderChart(); renderFine(); renderJournal(); initSyncUI(); doSync(false);
 </script>
 
 <nav>
