@@ -28,7 +28,12 @@ jobs:
           else
             TEXT="☀️ Доброе утро! Утренний комплекс для глаз (~8 минут): пробуждение глаз, письмо носом, повороты, соляризация и пальминг. Открыть тренажер: $URL"
           fi
-          curl -s -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+          RESP=$(curl -s -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=${TEXT}" >/dev/null
-          echo "Отправлено."
+            --data-urlencode "text=${TEXT}")
+          if echo "$RESP" | grep -q '"ok":true'; then
+            echo "Отправлено."
+          else
+            echo "Ошибка Telegram API: $RESP"
+            exit 1
+          fi
