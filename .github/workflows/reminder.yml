@@ -2,10 +2,16 @@ name: Напоминания о тренировке зрения
 
 on:
   schedule:
-    # Время в UTC. Тихоокеанское время: лето (PDT) = UTC-7, зима (PST) = UTC-8.
-    - cron: '0 15 * * *'   # утро: 8:00 PDT (лето) / 7:00 PST (зима)
-    - cron: '30 3 * * *'   # вечер: 20:30 PDT (лето) / 19:30 PST (зима)
+    # Время в UTC, минуты нарочно «некруглые»: кроны на :00/:30 GitHub в часы пик часто пропускает.
+    # На каждый слот два запуска — основной и резервный; от дублей защищает проверка ниже.
+    - cron: '7 15 * * *'   # утро (основной):  ~8:07 PDT / 7:07 PST
+    - cron: '37 15 * * *'  # утро (резервный)
+    - cron: '37 3 * * *'   # вечер (основной): ~20:37 PDT / 19:37 PST
+    - cron: '7 4 * * *'    # вечер (резервный)
   workflow_dispatch: {}     # ручной запуск для проверки
+
+permissions:
+  actions: read
 
 jobs:
   remind:
@@ -16,14 +22,35 @@ jobs:
           TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PAGE_URL: ${{ vars.PAGE_URL }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$TOKEN" ] || [ -z "$CHAT_ID" ]; then
             echo "Секреты TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — пропускаю."
             exit 0
           fi
-          URL="${PAGE_URL:-https://hannawebb86.github.io/vision-trainer/}"
           H=$(date -u +%H)
-          if [ "$H" -lt 12 ]; then
+          if [ "$H" -ge 10 ]; then SLOT=morning; else SLOT=evening; fi
+
+          # Дедупликация: если сегодня в этом окне уже была успешная отправка по расписанию — выходим.
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            TODAY=$(date -u +%Y-%m-%d)
+            COUNT=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/reminder.yml/runs?event=schedule&status=success&created=%3E%3D${TODAY}" \
+              | jq --arg slot "$SLOT" --arg id "$GITHUB_RUN_ID" \
+                '[.workflow_runs[]
+                  | select((.id|tostring) != $id)
+                  | select(.conclusion == "success")
+                  | select((.run_started_at[11:13]|tonumber) as $h
+                      | if $slot == "morning" then $h >= 10 else $h < 10 end)
+                 ] | length')
+            if [ "${COUNT:-0}" -gt 0 ]; then
+              echo "В этом окне уже отправлено (резервный запуск) — пропускаю."
+              exit 0
+            fi
+          fi
+
+          URL="${PAGE_URL:-https://hannawebb86.github.io/vision-trainer/}"
+          if [ "$SLOT" = "evening" ]; then
             TEXT="🌙 Вечернее занятие для глаз (~7 минут): упражнение с таблицей, большие повороты и пальминг перед сном. Открыть тренажер: $URL"
           else
             TEXT="☀️ Доброе утро! Утренний комплекс для глаз (~8 минут): пробуждение глаз, письмо носом, повороты, соляризация и пальминг. Открыть тренажер: $URL"

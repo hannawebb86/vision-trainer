@@ -52,7 +52,10 @@ nav button.act{color:var(--accent); font-weight:700}
 #pex .steps li{margin:7px 0}
 #pex .tip{background:var(--accent-soft); border-radius:10px; padding:10px 12px; margin-top:12px; font-size:.9rem}
 #pex .src{color:var(--muted); font-size:.78rem; margin-top:10px; font-style:italic}
-.pctl{display:flex; gap:8px; justify-content:center; margin:14px 0; flex-wrap:wrap}
+.pctl{display:flex; gap:8px; justify-content:center; align-items:center; margin:14px 0; flex-wrap:wrap}
+.voice-toggle{display:inline-flex; align-items:center; gap:5px; margin:0; font-size:.9rem; color:var(--muted); cursor:pointer}
+.pic{text-align:center; margin:10px 0 2px}
+.pic svg{max-width:250px; width:100%; height:auto; color:var(--accent)}
 /* chart */
 .chartwrap{background:#fff; color:#111; border-radius:12px; padding:22px 8px; text-align:center; overflow-x:auto}
 .chartlines{display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:14px}
@@ -235,6 +238,7 @@ h3{font-size:1rem; margin:14px 0 4px}
     <button class="btn" id="ppause" onclick="togglePause()">⏸ пауза</button>
     <button class="btn sec" onclick="addTime(30)">+30 сек</button>
     <button class="btn sec" onclick="nextEx()">дальше ▸</button>
+    <label class="voice-toggle"><input type="checkbox" id="pvoice" onchange="setVoice(this.checked)"> 🔊 голос</label>
   </div>
   <div id="pex" class="card"></div>
 </div></div>
@@ -257,29 +261,34 @@ const EX = {
       'Движения мягкие, дыхание глубокое.'],
     tip:'Снимает напряжение у основания черепа. Это и «первая помощь» при усталости глаз днём.'},
   finger: {t:'Пальцевые повороты', d:60, src:'Корбетт, гл. 1',
-    steps:['Поставьте указательный палец перед носом.',
-      'Мягко поворачивайте голову из стороны в сторону, глядя МИМО пальца, а не на него — палец «задвигается».',
-      'Сделайте 20–30 поворотов, часть — с закрытыми глазами (кончик носа касается пальца).',
-      'Помните о дыхании.'],
-    tip:'Нет иллюзии движения? Растопырьте пальцы «частоколом» перед лицом и поворачивайте голову, глядя сквозь них вдаль.'},
+    steps:['Поднимите указательный палец вертикально перед носом, на уровне глаз, примерно в 15–20 см от лица (чуть ближе половины вытянутой руки). Палец неподвижен.',
+      'Мягко поворачивайте голову из стороны в сторону, как будто медленно говорите «нет». Смотрите МИМО пальца, вдаль — не фокусируйтесь на нём.',
+      'Появится иллюзия, что палец сам «ездит» из стороны в сторону, противоположно повороту головы. Это и есть цель.',
+      'Сделайте 20–30 поворотов; часть — с закрытыми глазами, так, чтобы кончик носа при каждом повороте слегка задевал палец.',
+      'Плечи расслаблены, дыхание ровное и глубокое.'],
+    tip:'Нет иллюзии движения? Поднесите ладони к лицу, широко растопырив пальцы «частоколом», и поворачивайте голову, глядя сквозь них вдаль: 3 поворота с закрытыми глазами, 3 с открытыми.'},
   bigswing: {t:'Большие повороты', d:120, src:'Корбетт, гл. 1; Бейтс, гл. 24',
-    steps:['Встаньте лицом к окну, ступни на ширине ~30 см.',
-      'Перенося вес на левую ногу, поверните плечи, голову и взгляд к левой стене; затем, перенося вес на правую, — к правой. Пятка отрывается от пола.',
-      'Ритм медленного вальса, можно напевать — это гарантирует дыхание.',
-      'Окна «проплывают» мимо в противоположную сторону — не цепляйтесь за них взглядом, «забирайте глаза с собой».',
-      'Счёт до 100: до 60-го поворота — достижение расслабления, с 60-го по 100-й — наслаждение им.'],
-    tip:'Это не физкультура, а расслабление. Головокружение = взгляд «прилип» — двигайте голову, плечи и глаза вместе.'},
+    steps:['Встаньте лицом к окну (или стене), ступни параллельно, на ширине ~30 см, колени мягкие, руки свободно висят.',
+      'Плавно поверните корпус, плечи и голову влево до упора (линия плеч почти перпендикулярна окну), перенося вес целиком на левую ногу; правая пятка при этом отрывается от пола.',
+      'Так же плавно повернитесь вправо: вес на правую ногу, левая пятка вверх. Руки не напрягайте — пусть «летят» за корпусом сами.',
+      'Ритм медленного вальса («раз-два-три»), можно напевать — так дыхание не задерживается.',
+      'Взгляд ни за что не цепляется: окна «проплывают» мимо в противоположную сторону, глаза просто едут вместе с головой.',
+      'Счёт до 100: до 60-го поворота приходит расслабление, с 60-го по 100-й — наслаждайтесь им.'],
+    tip:'Это не физкультура, а расслабление. Закружилась голова — значит, взгляд «прилип» к предметам: двигайте голову, плечи и глаза единым целым.'},
   sun: {t:'Соляризация (закрытые глаза)', d:60, src:'Корбетт, гл. 1; Бейтс, гл. 24 — здесь только щадящий вариант',
-    steps:['Подставьте ЗАКРЫТЫЕ глаза солнцу — на улице, на балконе или у открытого окна.',
-      'Мягко поворачивайте голову из стороны в сторону: «солнце приходит — солнце уходит».',
-      'Нет солнца — сядьте в ~1 м от яркой лампы и делайте то же самое.',
+    steps:['Встаньте или сядьте лицом к солнцу — на улице, на балконе или у окна (через стекло тоже годится). Глаза ЗАКРЫТЫ.',
+      'Голову чуть приподнимите, чтобы свет падал прямо на закрытые веки.',
+      'Мягко поворачивайте голову из стороны в сторону, как в пальцевых поворотах, и думайте: «солнце приходит — солнце уходит».',
+      'Нет солнца — сядьте в ~1 м от самой яркой лампы в доме и делайте то же самое.',
       'При любом неприятном ощущении — прекратите и уйдите в тень.'],
     tip:'Глаза не открывать! После соляризации всегда пальминг — вдвое дольше неё.'},
   palm: {t:'Пальминг', d:120, src:'Бейтс, гл. 9; Корбетт, гл. 1',
-    steps:['Потрите ладони. Сложите их чашечками и накройте закрытые глаза: пальцы скрещены на лбу, давления на глазные яблоки нет, свет не проникает.',
-      'Локти обоприте о стол или подушку на коленях; шея на одной линии с позвоночником.',
-      'Вспоминайте приятное: путешествие, любимое место, музыку. Не думайте о глазах.',
-      'Идеал — ровное чёрное поле, но не добивайтесь его усилием: чернота приходит сама с расслаблением.'],
+    steps:['Сядьте к столу, потрите ладони до тепла. Закройте глаза.',
+      'Сложите ладони «чашечками» и накройте ими глаза: правая ладонь над правым глазом, левая над левым, пальцы скрещиваются на лбу. Впадины ладоней — над глазницами, никакого давления на сами глаза; нос свободен и дышит.',
+      'Проверьте: свет сквозь ладони не пробивается, а моргать под ними можно свободно.',
+      'Локти поставьте на стол или на подушку на коленях, шея на одной линии с позвоночником, спина расслаблена.',
+      'Вспоминайте приятное: путешествие, любимое место, музыку. Не думайте о глазах и не «всматривайтесь» в темноту.',
+      'Идеал — ровное чёрное поле, но не добивайтесь его усилием: чернота приходит сама вместе с расслаблением.'],
     tip:'Отняв руки, заметьте: мир стал ярче. Днём делайте мини-пальминг «понемногу, но часто» — хоть 10 секунд.'},
   imagine: {t:'Мысленное представление', d:120, src:'Корбетт, гл. 1; Бейтс, гл. 10–11',
     steps:['Можно совместить с пальмингом. Представьте белый лист бумаги и ручку.',
@@ -339,6 +348,54 @@ const EX = {
     tip:'Мелкий шрифт невозможно прочитать без расслабления — потому он и лечит (а усилие никогда не приносит успеха).'}
 };
 
+/* ===================== иллюстрации (схемы) ===================== */
+const PICS = {
+finger: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<path d="M64 26 Q110 0 156 26"/><path d="M74 20 L64 26 L75 30"/><path d="M146 20 L156 26 L145 30"/>'+
+  '<circle cx="110" cy="64" r="26"/><path d="M97 60 q6 6 12 0 M111 60 q6 6 12 0" stroke-width="3"/>'+
+  '<path d="M110 130 V76" stroke-width="6"/><circle cx="110" cy="73" r="3" fill="currentColor" stroke="none"/>'+
+  '<path d="M148 96 h34" stroke-width="3" stroke-dasharray="4 5"/><path d="M148 96 l6 -4 M148 96 l6 4" stroke-width="3"/></svg>',
+bigswing: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<path d="M58 18 Q110 -6 162 18"/><path d="M68 12 L58 18 L69 22"/><path d="M152 12 L162 18 L151 22"/>'+
+  '<circle cx="110" cy="30" r="11"/><path d="M110 41 V78"/>'+
+  '<path d="M110 50 Q84 58 76 68 M110 50 Q136 56 146 62"/>'+
+  '<path d="M110 78 L94 120 M110 78 L126 120"/><path d="M94 120 h-11 M126 120 h11"/>'+
+  '<path d="M86 112 q-5 -6 -3 -12" stroke-width="3" opacity=".6"/></svg>',
+palm: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="110" cy="64" r="30"/>'+
+  '<ellipse cx="95" cy="66" rx="14" ry="20" transform="rotate(-14 95 66)"/>'+
+  '<ellipse cx="125" cy="66" rx="14" ry="20" transform="rotate(14 125 66)"/>'+
+  '<path d="M88 42 L124 30 M96 32 L128 42" stroke-width="3"/>'+
+  '<path d="M84 84 L62 116 M136 84 L158 116" stroke-width="3" opacity=".55"/></svg>',
+sun: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="40" cy="30" r="13"/>'+
+  '<path d="M40 11v-7 M40 49v7 M59 30h7 M21 30h-7 M53 17l5-5 M53 43l5 5 M27 17l-5-5 M27 43l-5 5" stroke-width="3"/>'+
+  '<path d="M97 38 Q137 16 177 38"/><path d="M107 32 L97 38 L108 42"/><path d="M167 32 L177 38 L166 42"/>'+
+  '<circle cx="137" cy="74" r="26"/><path d="M124 70 q6 6 12 0 M138 70 q6 6 12 0" stroke-width="3"/></svg>',
+nose: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="68" cy="55" r="26"/><path d="M90 48 l10 7 -9 6" stroke-width="3"/>'+
+  '<path d="M86 40 q6 5 12 1 " stroke-width="3"/>'+
+  '<path d="M100 58 L160 88" stroke-width="3"/><path d="M160 88 l10 5 -6 -10 z" fill="currentColor" stroke="none"/>'+
+  '<path d="M168 116 q7 -26 14 0 M170 106 h10" stroke-width="3" stroke-dasharray="4 4"/>'+
+  '<path d="M50 20 q18 -13 36 0" stroke-width="3" opacity=".6"/></svg>',
+sniper: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="26" cy="76" r="12"/>'+
+  '<path d="M38 74 L184 46" stroke-width="5"/>'+
+  '<rect x="186" y="14" width="26" height="62" rx="3"/><path d="M192 28 h14 M193 44 h12 M195 60 h9" stroke-width="3"/>'+
+  '<path d="M42 62 L170 38" stroke-width="3" stroke-dasharray="5 6"/><path d="M162 34 L170 38 L163 44" stroke-width="3"/></svg>',
+shuttle: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<text x="110" y="84" text-anchor="middle" font-family="Arial" font-size="62" font-weight="bold" fill="currentColor" stroke="none">R</text>'+
+  '<circle cx="62" cy="60" r="4" fill="currentColor" stroke="none"/><circle cx="158" cy="60" r="4" fill="currentColor" stroke="none"/>'+
+  '<path d="M56 104 Q110 124 164 104" stroke-width="3"/>'+
+  '<path d="M64 98 L56 104 L66 108" stroke-width="3"/><path d="M156 98 L164 104 L154 108" stroke-width="3"/></svg>',
+bates_swing: '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<text x="55" y="76" text-anchor="middle" font-family="Arial" font-size="46" font-weight="bold" fill="currentColor" stroke="none">А</text>'+
+  '<text x="165" y="76" text-anchor="middle" font-family="Arial" font-size="46" font-weight="bold" fill="currentColor" stroke="none">Т</text>'+
+  '<path d="M78 44 Q110 24 142 44" stroke-width="3" stroke-dasharray="5 6"/>'+
+  '<path d="M76 96 Q110 114 144 96" stroke-width="3"/>'+
+  '<path d="M84 90 L76 96 L86 100" stroke-width="3"/><path d="M136 90 L144 96 L134 100" stroke-width="3"/></svg>'
+};
+
 /* ===================== программы ===================== */
 const ROTATION = ['rne','sniper','shuttle','bates_swing','central','fineread'];
 const ROT_NAMES = {rne:'Таблица RNE', sniper:'«Меткий стрелок»', shuttle:'«Челнок»',
@@ -387,41 +444,62 @@ function renderToday(){
 }
 
 /* ===================== плеер ===================== */
-let P=null;
+let P=null, AC=null, wakeLock=null;
+function voiceOn(){ return localStorage.getItem('vt2_voice')!=='0'; }
+function setVoice(v){ localStorage.setItem('vt2_voice', v?'1':'0'); }
+async function keepAwake(){
+  try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+function releaseWake(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
+document.addEventListener('visibilitychange', ()=>{
+  if(P && document.visibilityState==='visible'){ keepAwake(); leftNow(); tickRender(); }
+});
 function startSession(kind){
-  P={kind, ids:program(kind, dayNum()), i:0, left:0, paused:false, timer:null};
+  P={kind, ids:program(kind, dayNum()), i:0, endAt:0, total:0, paused:false, remaining:0, timer:null};
+  try{ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); AC.resume(); }catch(e){}
+  keepAwake();
   document.getElementById('ptitle').textContent = SESSION_TITLES[kind];
+  document.getElementById('pvoice').checked = voiceOn();
   document.getElementById('player').classList.add('open');
   loadEx();
 }
+function leftNow(){ return P.paused ? Math.ceil(P.remaining/1000) : Math.ceil((P.endAt-Date.now())/1000); }
 function loadEx(){
   const ex = EX[P.ids[P.i]];
-  P.left = ex.d; P.total = ex.d; P.paused=false;
+  P.total = ex.d; P.paused=false;
+  P.endAt = Date.now() + ex.d*1000;   /* отсчёт по настенным часам: не сбивается, если вкладка заснула */
   document.getElementById('pstep').textContent = 'Упражнение '+(P.i+1)+' из '+P.ids.length;
-  document.getElementById('pex').innerHTML = '<h2>'+ex.t+'</h2><ol class="steps">'+
-    ex.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
+  document.getElementById('pex').innerHTML = '<h2>'+ex.t+'</h2>'+
+    (PICS[P.ids[P.i]] ? '<div class="pic">'+PICS[P.ids[P.i]]+'</div>' : '')+
+    '<ol class="steps">'+ex.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
     (ex.tip?'<div class="tip">💡 '+ex.tip+'</div>':'')+
     '<div class="src">Источник: '+ex.src+'</div>';
   document.getElementById('ppause').textContent='⏸ пауза';
+  speak(ex.t);
   tickRender();
   clearInterval(P.timer);
-  P.timer = setInterval(()=>{ if(P.paused) return; P.left--; tickRender();
-    if(P.left<=0){ beep(); nextEx(); } }, 1000);
+  P.timer = setInterval(()=>{ if(!P || P.paused) return; tickRender();
+    if(leftNow()<=0){ beep(); nextEx(); } }, 500);
 }
 function tickRender(){
-  const m=Math.floor(Math.max(0,P.left)/60), s=Math.max(0,P.left)%60;
-  document.getElementById('ptime').textContent = m+':'+String(s).padStart(2,'0');
-  document.querySelector('#pbar div').style.width = (100*(1-P.left/P.total))+'%';
+  const l=Math.max(0,leftNow());
+  document.getElementById('ptime').textContent = Math.floor(l/60)+':'+String(l%60).padStart(2,'0');
+  document.querySelector('#pbar div').style.width = (100*(1-l/P.total))+'%';
 }
-function togglePause(){ P.paused=!P.paused; document.getElementById('ppause').textContent = P.paused?'▶ дальше':'⏸ пауза'; }
-function addTime(n){ P.left+=n; P.total+=n; tickRender(); }
+function togglePause(){
+  if(P.paused){ P.endAt = Date.now()+P.remaining; P.paused=false; }
+  else { P.remaining = Math.max(0, P.endAt-Date.now()); P.paused=true; }
+  document.getElementById('ppause').textContent = P.paused?'▶ дальше':'⏸ пауза';
+}
+function addTime(n){ if(P.paused) P.remaining+=n*1000; else P.endAt+=n*1000; P.total+=n; tickRender(); }
 function nextEx(){
   if(P.i < P.ids.length-1){ P.i++; loadEx(); }
   else finishSession();
 }
 function finishSession(){
-  clearInterval(P.timer);
+  clearInterval(P.timer); releaseWake();
   const t=today(); S.log[t]=S.log[t]||{}; S.log[t][P.kind]=true; S.log[t].t=Date.now(); save(); scheduleSync();
+  speak('Занятие завершено. Отличная работа!');
   document.getElementById('pex').innerHTML = '<h2>Готово! 🎉</h2><p>Занятие записано в дневник.</p>'+
     '<p class="muted">Как сегодня виделось?</p><div class="row">'+
     ['😣 тяжело','🙂 обычно','✨ яснее'].map((l,i)=>'<button class="btn sec" onclick="rate('+i+')">'+l+'</button>').join('')+'</div>';
@@ -429,12 +507,32 @@ function finishSession(){
   document.querySelector('#pbar div').style.width='100%';
 }
 function rate(r){ const t=today(); S.log[t].r=r; S.log[t].t=Date.now(); save(); scheduleSync(); closePlayer(); }
-function closePlayer(){ if(P) clearInterval(P.timer); P=null;
+function closePlayer(){ if(P) clearInterval(P.timer); P=null; releaseWake();
+  try{ speechSynthesis.cancel(); }catch(e){}
   document.getElementById('player').classList.remove('open'); renderToday(); renderJournal(); }
-function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)();
-  const o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination);
-  o.frequency.value=660; g.gain.value=.12; o.start();
-  o.stop(a.currentTime+.35); }catch(e){} }
+function beep(){
+  try{
+    const a = AC || new (window.AudioContext||window.webkitAudioContext)(); AC=a; a.resume();
+    for(let i=0;i<3;i++){
+      const o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination);
+      o.type='sine'; o.frequency.value = i===2?988:784;
+      const t0=a.currentTime + i*0.45;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.5, t0+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+0.4);
+      o.start(t0); o.stop(t0+0.42);
+    }
+  }catch(e){}
+  try{ if(navigator.vibrate) navigator.vibrate([250,120,250,120,400]); }catch(e){}
+}
+function speak(text){
+  if(!voiceOn()) return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text); u.lang='ru-RU'; u.rate=1.05; u.volume=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 
 /* ===================== таблица RNE ===================== */
 const ROWS=[['R N E',3],['E O Y',2],['L R E',1.75],['A M T',1.5],['X A R',1],
