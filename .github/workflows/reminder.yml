@@ -4,7 +4,8 @@ name: Напоминания о тренировке зрения
 # отправки НЕ привязано к крону: workflow стартует каждые 20 минут, а отправляет
 # только когда фактическое время в Лос-Анджелесе попало в окно:
 #   утро  06:30–07:29,  вечер 20:30–21:29 (переход на зимнее время учитывается сам).
-# От дублей защищает переменная репозитория REMINDER_STATE.
+# От дублей защищает артефакт-маркер sent-<дата>-<слот> (переменные репозитория
+# GITHUB_TOKEN писать не может — проверено, HTTP 403).
 # Публичный репозиторий — минуты Actions бесплатны.
 
 on:
@@ -13,47 +14,53 @@ on:
   workflow_dispatch: {}     # ручной запуск для проверки (шлёт сразу, без окна)
 
 permissions:
-  actions: write   # чтение и запись переменной REMINDER_STATE
+  actions: read   # чтение списка артефактов для дедупликации
 
 jobs:
   remind:
     runs-on: ubuntu-latest
     steps:
-      - name: Проверить окно и отправить
+      - name: Решить, отправлять ли сейчас
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          HM=$((10#$(TZ=America/Los_Angeles date +%H%M)))
+          D=$(TZ=America/Los_Angeles date +%F)
+          SEND=no; SLOT=none; KEY=none
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$HM" -lt 1200 ]; then SLOT=morning; else SLOT=evening; fi
+            KEY="manual-${D}-${HM}"; SEND=yes
+            echo "Ручной запуск: слот $SLOT."
+          elif [ "$HM" -ge 630 ] && [ "$HM" -le 729 ]; then SLOT=morning; KEY="${D}-morning"; SEND=yes
+          elif [ "$HM" -ge 2030 ] && [ "$HM" -le 2129 ]; then SLOT=evening; KEY="${D}-evening"; SEND=yes
+          else
+            echo "Сейчас $HM по Лос-Анджелесу — вне окон отправки, тихо выходим."
+          fi
+          if [ "$SEND" = "yes" ] && [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            N=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" \
+              "https://api.github.com/repos/${REPO}/actions/artifacts?name=sent-${KEY}&per_page=1" \
+              | jq -r '.total_count // 0')
+            if [ "${N:-0}" -gt 0 ]; then
+              echo "Сегодня в этом окне уже отправлено (${KEY}) — пропускаю."
+              SEND=no
+            fi
+          fi
+          { echo "send=$SEND"; echo "slot=$SLOT"; echo "key=$KEY"; } >> "$GITHUB_OUTPUT"
+
+      - name: Отправить напоминание в Telegram
+        if: steps.plan.outputs.send == 'yes'
         env:
           TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PAGE_URL: ${{ vars.PAGE_URL }}
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
+          SLOT: ${{ steps.plan.outputs.slot }}
         run: |
           if [ -z "$TOKEN" ] || [ -z "$CHAT_ID" ]; then
             echo "Секреты TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — пропускаю."
             exit 0
           fi
-          HM=$((10#$(TZ=America/Los_Angeles date +%H%M)))
-          D=$(TZ=America/Los_Angeles date +%F)
-          API="https://api.github.com/repos/${REPO}/actions/variables"
-
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            if [ "$HM" -lt 1200 ]; then SLOT=morning; else SLOT=evening; fi
-            KEY="manual-${D}-${HM}"
-            echo "Ручной запуск: слот $SLOT."
-          else
-            if [ "$HM" -ge 630 ] && [ "$HM" -le 729 ]; then SLOT=morning
-            elif [ "$HM" -ge 2030 ] && [ "$HM" -le 2129 ]; then SLOT=evening
-            else
-              echo "Сейчас $HM по Лос-Анджелесу — вне окон отправки, тихо выходим."
-              exit 0
-            fi
-            KEY="${D}-${SLOT}"
-            STATE=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" "${API}/REMINDER_STATE" | jq -r '.value // empty')
-            if [ "$STATE" = "$KEY" ]; then
-              echo "Сегодня в этом окне уже отправлено (${KEY}) — пропускаю."
-              exit 0
-            fi
-          fi
-
           URL="${PAGE_URL:-https://hannawebb86.github.io/vision-trainer/}"
           if [ "$SLOT" = "evening" ]; then
             TEXT="🌙 Вечернее занятие для глаз (~8 минут): соляризация, пальминг, упражнение с таблицей и большие повороты. Открыть тренажер: $URL"
@@ -65,20 +72,16 @@ jobs:
             --data-urlencode "text=${TEXT}")
           if echo "$RESP" | grep -q '"ok":true'; then
             echo "Отправлено (${SLOT})."
+            echo "sent at $(date -u)" > /tmp/sent-marker.txt
           else
             echo "Ошибка Telegram API: $RESP"
             exit 1
           fi
 
-          # записать состояние (защита от дублей); при неудаче — только предупреждение
-          BODY="{\"name\":\"REMINDER_STATE\",\"value\":\"${KEY}\"}"
-          CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH \
-            -H "Authorization: Bearer ${GH_TOKEN}" "${API}/REMINDER_STATE" -d "$BODY")
-          if [ "$CODE" = "404" ]; then
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
-              -H "Authorization: Bearer ${GH_TOKEN}" "${API}" -d "$BODY")
-          fi
-          case "$CODE" in
-            2*) echo "Состояние записано: ${KEY}" ;;
-            *)  echo "::warning::Не удалось записать REMINDER_STATE (HTTP ${CODE}) — возможны дубли в этом окне." ;;
-          esac
+      - name: Пометить окно как отправленное
+        if: steps.plan.outputs.send == 'yes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sent-${{ steps.plan.outputs.key }}
+          path: /tmp/sent-marker.txt
+          retention-days: 2
