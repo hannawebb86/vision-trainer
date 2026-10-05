@@ -103,6 +103,7 @@ h3{font-size:1rem; margin:14px 0 4px}
   <div class="card" id="morningcard"></div>
   <div class="card" id="middaycard"></div>
   <div class="card" id="eveningcard"></div>
+  <div class="card" id="duskcard"></div>
   <div class="card muted" style="font-size:.82rem">
     Метод Бейтса не признан доказательной медициной. Тренажер — дополнение к наблюдению у офтальмолога,
     а не замена ему. При боли или дискомфорте — прекратите упражнение.
@@ -209,6 +210,16 @@ h3{font-size:1rem; margin:14px 0 4px}
         через год-два; прогресс идёт скачками, плато — это нормально.</li>
       <li>По нарушениям: миопия — пальминг с визуализацией, наблюдательность, свежий воздух;
         астигматизм — все двигательные упражнения, особенно домино и контуры.</li>
+    </ul>
+    <h3>Ночное зрение («Сумерки»)</h3>
+    <ul>
+      <li>Отдельной методики от «куриной слепоты» в книгах нет. Занятие «Сумерки» собрано из вечерней практики
+        Барнса (гл. 7: позже включать свет, не разглядывать детали, смотреть чуть в сторону, как астрономы) и
+        тренировки сменой освещения у Бейтса (гл. 14). Делайте его по желанию, когда смеркается.</li>
+      <li>Ночью при близорукости и астигматизме зрение обычно хуже (зрачок шире, больше ореолов вокруг огней) —
+        это ожидаемо. Но если ночное зрение ухудшилось недавно или продолжает ухудшаться, скажите офтальмологу:
+        так проявляются и состояния, которые надо лечить (нехватка витамина A, катаракта, болезни сетчатки).</li>
+      <li>За рулём в темноте — всегда в очках.</li>
     </ul>
     <h3>Предостережения</h3>
     <div class="warn">☀️ Соляризация в тренажере — <b>только с закрытыми глазами</b>. В книге есть этапы со взглядом
@@ -370,6 +381,25 @@ const EX = {
       'Закройте глаза и подробно изучите образ, оставшийся в памяти.',
       'Откройте — сравните воображаемое с реальностью. Снова закройте и повторите несколько раз: деталей всё больше, образы всё ярче.'],
     tip:'По Барнсу — возможно, лучший способ восстановить фовеальное зрение, при близорукости особенно. В поездках: провожайте взглядом удаляющиеся машины — их номера и надписи и есть ваши «проверочные таблицы».'},
+  /* --- «Сумерки» (необязательное, вечером в темноте) --- */
+  dusk_watch: {t:'Сумерки: наблюдение', d:300, src:'Барнс, гл. 7 «Вечерняя практика»',
+    steps:['Начните, когда на улице смеркается, и пока не включайте свет. Сядьте у окна или в комнате, где постепенно темнеет.',
+      'Спокойно скользите взглядом по комнате и пейзажу за окном, не задерживаясь ни на чём. Моргайте легко, дышите свободно.',
+      'Замечайте, как постепенно уходят детали, цвета, ощущение глубины. Просто замечайте, без оценки.',
+      'Не пытайтесь разглядеть мелочи — по Барнсу, это только усиливает напряжение.'],
+    tip:'Если хватает времени, по Барнсу полезно откладывать включение света на полчаса и дольше. Не ходите в темноте там, где можно споткнуться.'},
+  dusk_side: {t:'Сумерки: приём астрономов', d:180, src:'Барнс, гл. 7',
+    steps:['Найдите слабо различимый объект: неяркую звезду, далёкий огонёк или светлый предмет в тёмной части комнаты.',
+      'Посмотрите не прямо на него, а немного в сторону. Заметьте: «краем глаза» он виден лучше.',
+      'Мягко переводите взгляд вокруг объекта (выше, ниже, левее, правее), не останавливаясь прямо на нём.',
+      'Возьмите другой объект и повторите. Глаза не напрягайте, не щурьтесь.'],
+    tip:'Почему это работает: в темноте видят палочки, а их больше всего вне центра сетчатки. Астрономы именно так рассматривают слабые звёзды.'},
+  light_switch: {t:'Переход «темнота — свет»', d:120, src:'Бейтс, гл. 14',
+    steps:['Включите свет (или выйдите из тёмной комнаты в освещённую). Не щурьтесь, просто легко моргайте, пока глаза привыкают.',
+      'Через полминуты снова вернитесь в темноту (выключите свет или уйдите в тёмную комнату) и спокойно подождите, скользя взглядом.',
+      'Повторите 2–3 раза.',
+      'Закончите на свету коротким пальмингом или просто закройте глаза на несколько вдохов.'],
+    tip:'По Бейтсу, резкие смены освещения поначалу неприятны, но со временем идут глазам только на пользу. Вариант на другой вечер: почитайте мелкий шрифт при тусклом свете, если это даётся без дискомфорта.'},
   sun_prep: {t:'Соляризация — подготовка глаз', d:60, src:'Корбетт, гл. 1 и 3: перед работой с таблицей — соляризация, затем пальминг вдвое дольше',
     steps:['Глаза ЗАКРЫТЫ. Если солнце ещё не село — встаньте к нему лицом у окна; вечером сядьте в ~1 м от самой яркой лампы в доме.',
       'Голову чуть приподнимите, чтобы свет падал прямо на закрытые веки.',
@@ -479,17 +509,18 @@ const FUSION_ROT = ['pencil','gate','ruler_tunnel'];              /* Барнс,
 const MOTOR_ROT  = ['nearfar','domino_b','contours','observe'];   /* Барнс, гл. 10–11 */
 function program(kind, dayN){
   if(dayN <= 7){ /* первая неделя — только базовые упражнения расслабления (Корбетт, гл. 1) */
-    if(kind==='d') return null;
+    if(kind==='d' || kind==='n') return null;
     return kind==='m'
       ? ['sun','palm','finger','bigswing']
       : ['bigswing','imagine','palm'];
   }
   if(kind==='m') return ['wake','nose','finger','bigswing','sun','palm'];
   if(kind==='d') return ['blink_breath', FUSION_ROT[dayN % 3], MOTOR_ROT[dayN % 4], 'palm'];
+  if(kind==='n') return ['dusk_watch','dusk_side','light_switch'];
   const rot = ROTATION[(dayN - 8) % ROTATION.length];
   return ['sun_prep','palm',rot,'bigswing'];
 }
-const SESSION_TITLES = {m:'☀️ Утреннее занятие', d:'🌤 Дневное занятие', e:'🌙 Вечернее занятие'};
+const SESSION_TITLES = {m:'☀️ Утреннее занятие', d:'🌤 Дневное занятие', e:'🌙 Вечернее занятие', n:'🌆 Сумерки · по желанию'};
 
 /* ===================== состояние ===================== */
 const LS='vt2_state';
@@ -505,12 +536,12 @@ function renderToday(){
   const dn = dayNum(), t = today(), log = S.log[t]||{};
   const phase = dn<=7 ? 'Базовая неделя расслабления — день '+dn+' из 7' : 'Основная программа — день '+dn;
   let streak=0; for(let i=0;;i++){ const d=new Date(Date.now()-i*86400000), k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const l=S.log[k]; if(l&&(l.m||l.e)) streak++; else if(i===0) continue; else break; }
+    const l=S.log[k]; if(l&&(l.m||l.d||l.e)) streak++; else if(i===0) continue; else break; }
   document.getElementById('todaycard').innerHTML =
     '<span class="badge">'+phase+'</span>'+
     '<div class="streak">🔥 Дней подряд: <b>'+streak+'</b></div>'+
     (dn>7 ? '<div class="muted">Сегодня в вечерней ротации: <b>'+ROT_NAMES[ROTATION[(dn-8)%ROTATION.length]]+'</b></div>' : '');
-  for(const [kind, el] of [['m','morningcard'],['d','middaycard'],['e','eveningcard']]){
+  for(const [kind, el] of [['m','morningcard'],['d','middaycard'],['e','eveningcard'],['n','duskcard']]){
     const ids = program(kind, dn), done = !!log[kind];
     const box = document.getElementById(el);
     if(!ids){ box.style.display='none'; box.innerHTML=''; continue; }
@@ -670,6 +701,26 @@ PICS.contours = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" st
   '<path d="M48 10 H172 V108 H48 Z" stroke-width="2.5" stroke-dasharray="6 6"/>'+
   '<path d="M48 10 l10 -6 M48 10 l10 6" stroke-width="3"/>'+
   '<path d="M96 52 q14 -14 28 0 q-14 14 -28 0 Z" stroke-width="3"/><circle cx="110" cy="52" r="4" fill="currentColor" stroke="none"/></svg>';
+PICS.dusk_watch = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<rect x="56" y="10" width="108" height="86" rx="4"/><path d="M110 10 V96 M56 53 H164" stroke-width="3"/>'+
+  '<path d="M140 22 a12 12 0 1 0 10 18 a9 9 0 1 1 -10 -18 Z" fill="currentColor" stroke="none"/>'+
+  '<circle cx="74" cy="28" r="2" fill="currentColor" stroke="none"/><circle cx="90" cy="40" r="1.6" fill="currentColor" stroke="none"/>'+
+  '<path d="M62 86 q12 -14 24 -6 t26 -4" stroke-width="2.5" opacity=".6"/>'+
+  '<path d="M40 118 h140" stroke-width="3"/></svg>';
+PICS.dusk_side = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<path d="M150 30 l4 9 10 1 -8 6 3 10 -9 -6 -9 6 3 -10 -8 -6 10 -1 z" fill="currentColor" stroke="none" opacity=".55"/>'+
+  '<path d="M28 92 q22 -22 44 0 q-22 22 -44 0 Z" stroke-width="3"/><circle cx="50" cy="92" r="6" fill="currentColor" stroke="none"/>'+
+  '<path d="M72 88 L176 64" stroke-width="2.5" stroke-dasharray="6 6"/>'+
+  '<path d="M168 60 L178 64 L170 71" stroke-width="2.5"/>'+
+  '<circle cx="154" cy="42" r="22" stroke-width="2" stroke-dasharray="3 5" opacity=".5"/></svg>';
+PICS.light_switch = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<rect x="16" y="14" width="80" height="104" rx="6" fill="currentColor" opacity=".18" stroke="none"/>'+
+  '<rect x="16" y="14" width="80" height="104" rx="6"/>'+
+  '<path d="M56 56 q-14 0 -14 14 q0 9 8 14 v8 h12 v-8 q8 -5 8 -14 q0 -14 -14 -14 Z" stroke-width="3"/>'+
+  '<rect x="124" y="14" width="80" height="104" rx="6"/>'+
+  '<path d="M164 56 q-14 0 -14 14 q0 9 8 14 v8 h12 v-8 q8 -5 8 -14 q0 -14 -14 -14 Z" stroke-width="3" fill="currentColor"/>'+
+  '<path d="M164 38 v-8 M142 46 l-6 -6 M186 46 l6 -6 M134 70 h-8 M194 70 h8" stroke-width="3"/>'+
+  '<path d="M100 66 h20 M100 66 l6 -4 M120 66 l-6 4" stroke-width="2.5"/></svg>';
 PICS.blink_breath = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
   '<path d="M48 44 q22 18 44 0 M70 53 v8 M56 50 l-6 7 M84 50 l6 7" stroke-width="3"/>'+
   '<path d="M128 44 q22 18 44 0 M150 53 v8 M136 50 l-6 7 M164 50 l6 7" stroke-width="3"/>'+
@@ -723,13 +774,13 @@ function renderFine(){
 /* ===================== дневник ===================== */
 function renderJournal(){
   const g=document.getElementById('jgrid'); let html='';
-  let total=0; for(const k in S.log){ if(S.log[k].m||S.log[k].e) total++; }
+  let total=0; for(const k in S.log){ if(S.log[k].m||S.log[k].d||S.log[k].e) total++; }
   for(let i=20;i>=0;i--){
     const d=new Date(Date.now()-i*86400000);
     const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     const l=S.log[k]||{}; const cls = l.m&&l.e?'full':(l.m||l.e?'half':'');
     html+='<div class="jday '+cls+'"><span class="m">'+d.getDate()+'</span><span>'+
-      (l.m?'☀':'')+(l.d?'🌤':'')+(l.e?'🌙':'')+'</span></div>';
+      (l.m?'☀':'')+(l.d?'🌤':'')+(l.e?'🌙':'')+(l.n?'🌆':'')+'</span></div>';
   }
   g.innerHTML=html;
   document.getElementById('jstats').innerHTML='Всего дней с занятиями: <b>'+total+'</b>';
@@ -766,7 +817,7 @@ function mergeState(a,b){
     const x=(a.log||{})[d]||{}, y=(b.log||{})[d]||{};
     const newer=(x.t||0)>=(y.t||0)?x:y;
     const e=Object.assign({}, newer);
-    if(x.m||y.m) e.m=true; if(x.e||y.e) e.e=true;
+    for(const s of ['m','d','e','n']) if(x[s]||y[s]) e[s]=true;
     out.log[d]=e;
   }
   const seen={};
