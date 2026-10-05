@@ -3,7 +3,7 @@ name: Напоминания о тренировке зрения
 # GitHub запускает кроны с опозданием на часы (наблюдалось 4–7 ч), поэтому время
 # отправки НЕ привязано к крону: workflow стартует каждые 20 минут, а отправляет
 # только когда фактическое время в Лос-Анджелесе попало в окно:
-#   утро  06:30–07:29,  вечер 20:30–21:29 (переход на зимнее время учитывается сам).
+#   утро 06:30–07:29,  день 13:00–13:59,  вечер 20:30–21:29 (зимнее время учитывается само).
 # От дублей защищает артефакт-маркер sent-<дата>-<слот> (переменные репозитория
 # GITHUB_TOKEN писать не может — проверено, HTTP 403).
 # Публичный репозиторий — минуты Actions бесплатны.
@@ -30,10 +30,11 @@ jobs:
           D=$(TZ=America/Los_Angeles date +%F)
           SEND=no; SLOT=none; KEY=none
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            if [ "$HM" -lt 1200 ]; then SLOT=morning; else SLOT=evening; fi
+            if [ "$HM" -lt 1000 ]; then SLOT=morning; elif [ "$HM" -lt 1700 ]; then SLOT=midday; else SLOT=evening; fi
             KEY="manual-${D}-${HM}"; SEND=yes
             echo "Ручной запуск: слот $SLOT."
           elif [ "$HM" -ge 630 ] && [ "$HM" -le 729 ]; then SLOT=morning; KEY="${D}-morning"; SEND=yes
+          elif [ "$HM" -ge 1300 ] && [ "$HM" -le 1359 ]; then SLOT=midday; KEY="${D}-midday"; SEND=yes
           elif [ "$HM" -ge 2030 ] && [ "$HM" -le 2129 ]; then SLOT=evening; KEY="${D}-evening"; SEND=yes
           else
             echo "Сейчас $HM по Лос-Анджелесу — вне окон отправки, тихо выходим."
@@ -64,6 +65,8 @@ jobs:
           URL="${PAGE_URL:-https://hannawebb86.github.io/vision-trainer/}"
           if [ "$SLOT" = "evening" ]; then
             TEXT="🌙 Вечернее занятие для глаз (~8 минут): соляризация, пальминг, упражнение с таблицей и большие повороты. Открыть тренажер: $URL"
+          elif [ "$SLOT" = "midday" ]; then
+            TEXT="🌤 Дневная разминка для глаз (~9 минут, по Барнсу): моргание и дыхание, фузионное упражнение и аккомодация. Открыть тренажер: $URL"
           else
             TEXT="☀️ Доброе утро! Утренний комплекс для глаз (~8 минут): пробуждение глаз, письмо носом, повороты, соляризация и пальминг. Открыть тренажер: $URL"
           fi

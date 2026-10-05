@@ -93,7 +93,7 @@ h3{font-size:1rem; margin:14px 0 4px}
 <body>
 <header>
   <h1>👁 Тренажер зрения</h1>
-  <div class="sub">по книге У. Бейтса и М. Корбетт · близорукость и астигматизм</div>
+  <div class="sub">по книгам У. Бейтса, М. Корбетт и Дж. Барнса · близорукость и астигматизм</div>
 </header>
 
 <main>
@@ -101,6 +101,7 @@ h3{font-size:1rem; margin:14px 0 4px}
 <section id="view-today" class="view act">
   <div class="card" id="todaycard"></div>
   <div class="card" id="morningcard"></div>
+  <div class="card" id="middaycard"></div>
   <div class="card" id="eveningcard"></div>
   <div class="card muted" style="font-size:.82rem">
     Метод Бейтса не признан доказательной медициной. Тренажер — дополнение к наблюдению у офтальмолога,
@@ -192,6 +193,22 @@ h3{font-size:1rem; margin:14px 0 4px}
       <li>Прогресс идёт волнами: за улучшением бывает затишье — это нормально (Корбетт, гл. 10).</li>
       <li>Заниматься — пока правильные привычки не станут подсознательными; затем достаточно поддерживающих
         пальминга и соляризации.</li>
+    </ul>
+    <h3>Из книги Барнса (дневной блок)</h3>
+    <ul>
+      <li><b>Дневное занятие</b> (с 8-го дня): моргание и дыхание, фузионные упражнения (гл. 8) и
+        двигательные/аккомодационные (гл. 10–11), в конце — пальминг. Упражнения чередуются по дням.</li>
+      <li><b>Про очки — мягче, чем у Бейтса:</b> Барнс советует не резкий отказ, а постепенный — каждый день
+        обходиться без очков на 15–20 минут дольше, чем вчера. Все упражнения — строго без очков.</li>
+      <li><b>Транспорт — тренажёр:</b> близоруким — провожать взглядом удаляющиеся машины (номера и надписи —
+        «проверочные таблицы»); следить в каждый момент только за одной машиной.</li>
+      <li><b>Норма моргания:</b> 2–4 раза каждые 10 секунд, легко и без усилия.</li>
+      <li><b>Чтение:</b> взгляд ведите по белой полосе под строкой; свет для чтения — яркий; шрифт лучше мелкий
+        с большим межстрочьем; делайте паузы на пальминг.</li>
+      <li><b>Ожидания:</b> первые «проблески» ясного зрения — обычно через пару месяцев; ощутимый результат —
+        через год-два; прогресс идёт скачками, плато — это нормально.</li>
+      <li>По нарушениям: миопия — пальминг с визуализацией, наблюдательность, свежий воздух;
+        астигматизм — все двигательные упражнения, особенно домино и контуры.</li>
     </ul>
     <h3>Предостережения</h3>
     <div class="warn">☀️ Соляризация в тренажере — <b>только с закрытыми глазами</b>. В книге есть этапы со взглядом
@@ -302,6 +319,57 @@ const EX = {
       'Повторяйте: отдых — мгновенный взгляд — отдых.',
       'Закрывайте глаза раньше, чем успеет включиться привычка напрягаться.'],
     tip:'Так ловятся «проблески» ясного зрения, которые постепенно сливаются.'},
+  /* --- дневной блок по Барнсу --- */
+  blink_breath: {t:'Моргание и дыхание', d:90, src:'Барнс, гл. 9',
+    steps:['Быстро и очень легко моргните несколько раз.',
+      'Закройте глаза и сделайте два спокойных вдоха-выдоха.',
+      'Повторите цикл 4 раза.',
+      'Ориентир на весь день: 2–4 моргания каждые 10 секунд. Заметили, что «застыли» взглядом, — моргните и подышите свободно.'],
+    tip:'Не вмешивайтесь в механизм дыхания — просто дышите ровно: для хорошего зрения не нужно задерживать дыхание (Барнс).'},
+  pencil: {t:'Фузия: один карандаш', d:120, src:'Барнс, гл. 8',
+    steps:['Держите карандаш перед лицом на ~45 см. Посмотрите на него, затем — на стену за ним.',
+      'Карандаш «раздвоится»: две одинаково чёткие «стойки ворот» по бокам точки, куда вы смотрите.',
+      'Если виден только один или один чётче другого: прикройте ладонью сильный глаз, посмотрите на карандаш и вдаль, затем откройте второй глаз и попробуйте пару мгновений удержать прежнюю картинку.',
+      'Если двоится дальняя точка: закройте один глаз, переводите взгляд карандаш → даль → карандаш 3 раза каждым глазом, потом обоими.'],
+    tip:'Это одновременно упражнение и проверка фузии. Если трудно — не волнуйтесь: по Барнсу, с практикой пальминга и соляризации всё образуется.'},
+  gate: {t:'Фузия: «ворота» из двух карандашей', d:150, src:'Барнс, гл. 8',
+    steps:['Один карандаш — на вытянутой руке, второй — в нескольких сантиметрах от носа. Вдали выберите ориентир, помещающийся в карандашные «ворота».',
+      'Смотрите на ориентир: образуются двое «ворот», одни внутри других. Все «четыре» карандаша видны одинаково хорошо (ближние размытее — это нормально).',
+      'Переведите взгляд на дальний карандаш: ориентир раздвоится на два одинаково чётких.',
+      'Взгляд на ближний карандаш: дальний образует «ворота», по бокам от них — два ориентира.',
+      'Сфокусируйтесь на точке между дальним карандашом и ориентиром, сохраняя «ворота» и двойной ориентир.'],
+    tip:'Вариант: карандаши контрастных цветов в нескольких сантиметрах друг от друга — цвет среднего «столбика» покажет, какой глаз сильнее; попробуйте сменить его цвет и удержать смешанный.'},
+  ruler_tunnel: {t:'Линейка-«туннель»', d:120, src:'Барнс, гл. 8',
+    steps:['Возьмите линейку. При близорукости начните с короткой (15 см), со временем переходите к 30 см и метровой.',
+      'Упритесь её концом в переносицу и нижнюю часть лба, дальний конец направьте строго вперёд, поддерживайте пальцами снизу.',
+      'Посмотрите вдаль: линейка выглядит как «туннель» с двумя стенками одинаковой чёткости.',
+      'Медленно ведите точку фокуса к себе — дальние концы «туннеля» сближаются и соединяются. Повторяйте спокойно, с морганием.'],
+    tip:'Смотря в такой «туннель», полезно обводить взглядом контуры дальних предметов — упражнения усиливают друг друга (Барнс).'},
+  nearfar: {t:'Приближение и удаление', d:150, src:'Барнс, гл. 11',
+    steps:['Полоска бумаги ~8×2 см с крестиком в центре (или просто заметная складка на ладони). Оберните полоску вокруг основания среднего пальца левой руки.',
+      'Прикройте правый глаз ладонью. Глядя на крестик, медленно приближайте его к глазу, пока не расплывётся, затем так же медленно отдаляйте.',
+      'С вытянутой руки снова приближайте, чуть быстрее. Всего 5 движений, постепенно ускоряясь.',
+      'То же правым глазом (полоска на правой руке), затем посмотрите вдаль — и повторите весь комплекс обоими глазами.',
+      'Со временем доведите число повторов комплекса до 6.'],
+    tip:'Поначалу может ощутимо напрягать глаза — не усердствуйте, останавливайтесь при усталости или потере интереса (Барнс).'},
+  domino_b: {t:'Домино', d:180, src:'Барнс, гл. 10', mat:'domino',
+    steps:['Костяшки — ниже на экране (подойдёт и настоящее домино). Разместите экран на границе зоны чёткого зрения.',
+      'Считайте очки на костяшках слева направо, легко скользя взглядом; затем пройдите по столбцам.',
+      'Разнообразьте: найдите все «единицы», потом «двойки»; складывайте или вычитайте очки соседних костяшек.',
+      'С каждым занятием отодвигайте костяшки чуть дальше от зоны чёткости. Никогда не напрягайтесь и не слишком усердствуйте в счёте.'],
+    tip:'По Барнсу это упражнение особенно полезно при астигматизме. Кнопка под костяшками перемешает их.'},
+  contours: {t:'Контуры', d:120, src:'Барнс, гл. 10',
+    steps:['Выберите объект с чётким контуром: рамку картины, дверь, окно, книгу на столе.',
+      'Ведите взгляд по контуру: от левого верхнего угла по часовой стрелке (один-несколько раз), затем против часовой, вернувшись в исходную точку.',
+      'Предпочитайте объекты в «размытой зоне» — той части поля зрения, что видна нечётко.',
+      'Дышите свободно, моргайте; пусть голова чуть помогает движению взгляда.'],
+    tip:'Одно из самых полезных упражнений по Барнсу — нормализует работу наружных глазных мышц; при астигматизме — то, что нужно.'},
+  observe: {t:'Наблюдательность', d:150, src:'Барнс, гл. 10',
+    steps:['Выберите объект или группу предметов: ваза с цветами, полка, вид из окна.',
+      'Задайте себе вопросы: сколько их? какого размера? какой формы? какого цвета? какие особенности?',
+      'Закройте глаза и подробно изучите образ, оставшийся в памяти.',
+      'Откройте — сравните воображаемое с реальностью. Снова закройте и повторите несколько раз: деталей всё больше, образы всё ярче.'],
+    tip:'По Барнсу — возможно, лучший способ восстановить фовеальное зрение, при близорукости особенно. В поездках: провожайте взглядом удаляющиеся машины — их номера и надписи и есть ваши «проверочные таблицы».'},
   sun_prep: {t:'Соляризация — подготовка глаз', d:60, src:'Корбетт, гл. 1 и 3: перед работой с таблицей — соляризация, затем пальминг вдвое дольше',
     steps:['Глаза ЗАКРЫТЫ. Если солнце ещё не село — встаньте к нему лицом у окна; вечером сядьте в ~1 м от самой яркой лампы в доме.',
       'Голову чуть приподнимите, чтобы свет падал прямо на закрытые веки.',
@@ -407,17 +475,21 @@ const ROTATION = ['rne','sniper','shuttle','bates_swing','central','fineread'];
 const ROT_NAMES = {rne:'Таблица RNE', sniper:'«Меткий стрелок»', shuttle:'«Челнок»',
   bates_swing:'Перемещение по Бейтсу', central:'Центральная фиксация', fineread:'Мелкий шрифт'};
 
+const FUSION_ROT = ['pencil','gate','ruler_tunnel'];              /* Барнс, гл. 8 */
+const MOTOR_ROT  = ['nearfar','domino_b','contours','observe'];   /* Барнс, гл. 10–11 */
 function program(kind, dayN){
   if(dayN <= 7){ /* первая неделя — только базовые упражнения расслабления (Корбетт, гл. 1) */
+    if(kind==='d') return null;
     return kind==='m'
       ? ['sun','palm','finger','bigswing']
       : ['bigswing','imagine','palm'];
   }
   if(kind==='m') return ['wake','nose','finger','bigswing','sun','palm'];
+  if(kind==='d') return ['blink_breath', FUSION_ROT[dayN % 3], MOTOR_ROT[dayN % 4], 'palm'];
   const rot = ROTATION[(dayN - 8) % ROTATION.length];
   return ['sun_prep','palm',rot,'bigswing'];
 }
-const SESSION_TITLES = {m:'☀️ Утреннее занятие', e:'🌙 Вечернее занятие'};
+const SESSION_TITLES = {m:'☀️ Утреннее занятие', d:'🌤 Дневное занятие', e:'🌙 Вечернее занятие'};
 
 /* ===================== состояние ===================== */
 const LS='vt2_state';
@@ -438,14 +510,18 @@ function renderToday(){
     '<span class="badge">'+phase+'</span>'+
     '<div class="streak">🔥 Дней подряд: <b>'+streak+'</b></div>'+
     (dn>7 ? '<div class="muted">Сегодня в вечерней ротации: <b>'+ROT_NAMES[ROTATION[(dn-8)%ROTATION.length]]+'</b></div>' : '');
-  for(const [kind, el] of [['m','morningcard'],['e','eveningcard']]){
+  for(const [kind, el] of [['m','morningcard'],['d','middaycard'],['e','eveningcard']]){
     const ids = program(kind, dn), done = !!log[kind];
-    document.getElementById(el).innerHTML =
+    const box = document.getElementById(el);
+    if(!ids){ box.style.display='none'; box.innerHTML=''; continue; }
+    box.style.display='';
+    box.innerHTML =
       '<h2>'+SESSION_TITLES[kind]+' · '+fmtDur(ids)+(done?' <span class="sess-done">✓ выполнено</span>':'')+'</h2>'+
       '<ul class="exlist">'+ids.map(i=>'<li><b>'+EX[i].t+'</b> · '+Math.round(EX[i].d/60*10)/10+' мин</li>').join('')+'</ul>'+
       '<div style="margin-top:10px"><button class="btn'+(done?' sec':'')+'" onclick="startSession(\''+kind+'\')">'+
       (done?'Повторить':'Начать')+'</button></div>';
   }
+  /* конец цикла карточек */
   const st=document.getElementById('setstart'); if(st) st.value=S.start;
 }
 
@@ -476,7 +552,10 @@ function loadEx(){
   P.endAt = Date.now() + ex.d*1000;   /* отсчёт по настенным часам: не сбивается, если вкладка заснула */
   document.getElementById('pstep').textContent = 'Упражнение '+(P.i+1)+' из '+P.ids.length;
   let mat='';
-  if(ex.mat==='fine')
+  if(ex.mat==='domino')
+    mat = '<div id="dominozone" style="margin-top:12px">'+dominoHTML()+'</div>'+
+      '<div style="text-align:center; margin-top:8px"><button class="btn sec" onclick="redoDomino()">🔀 Перемешать</button></div>';
+  else if(ex.mat==='fine')
     mat = '<div class="fineprint" style="margin-top:12px">'+FINE.map(([pt,txt])=>'<p style="font-size:'+pt+'pt">'+txt+'</p>').join('')+'</div>';
   else if(ex.mat==='chart')
     mat = '<details style="margin-top:12px"><summary style="cursor:pointer; color:var(--accent)">📋 Таблица RNE прямо здесь (таймер не остановится)</summary>'+
@@ -558,6 +637,62 @@ function chartHTML(unit){ /* unit: px на дюйм */
   return h;
 }
 PICS.sun_prep = PICS.sun;
+/* схемы дневного блока (Барнс); фузионные — вид сверху */
+PICS.pencil = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="88" cy="116" r="9"/><circle cx="132" cy="116" r="9"/>'+
+  '<rect x="104" y="60" width="12" height="22" rx="3"/>'+
+  '<rect x="96" y="6" width="28" height="12" rx="2" fill="currentColor" stroke="none"/>'+
+  '<path d="M88 107 L110 12 M132 107 L110 12" stroke-width="2" stroke-dasharray="5 5"/>'+
+  '<rect x="64" y="62" width="10" height="18" rx="3" stroke-dasharray="4 4" stroke-width="2.5"/>'+
+  '<rect x="146" y="62" width="10" height="18" rx="3" stroke-dasharray="4 4" stroke-width="2.5"/></svg>';
+PICS.gate = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="88" cy="118" r="8"/><circle cx="132" cy="118" r="8"/>'+
+  '<rect x="105" y="86" width="10" height="16" rx="3"/>'+
+  '<rect x="106" y="44" width="8" height="13" rx="2"/>'+
+  '<rect x="98" y="4" width="24" height="11" rx="2" fill="currentColor" stroke="none"/>'+
+  '<path d="M88 110 L110 10 M132 110 L110 10" stroke-width="2" stroke-dasharray="5 5"/>'+
+  '<rect x="74" y="88" width="8" height="13" rx="2" stroke-dasharray="4 4" stroke-width="2.5"/>'+
+  '<rect x="138" y="88" width="8" height="13" rx="2" stroke-dasharray="4 4" stroke-width="2.5"/>'+
+  '<rect x="88" y="45" width="7" height="11" rx="2" stroke-dasharray="4 4" stroke-width="2.5"/>'+
+  '<rect x="125" y="45" width="7" height="11" rx="2" stroke-dasharray="4 4" stroke-width="2.5"/></svg>';
+PICS.ruler_tunnel = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="34" cy="66" r="24"/><path d="M54 60 l9 6 -8 6" stroke-width="3"/>'+
+  '<path d="M62 58 L200 42 M62 74 L200 90" stroke-width="3"/>'+
+  '<path d="M62 58 L62 74" stroke-width="3"/>'+
+  '<path d="M90 60 L188 50 M90 72 L188 82" stroke-width="2" stroke-dasharray="5 5" opacity=".6"/></svg>';
+PICS.nearfar = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<circle cx="30" cy="62" r="18"/><path d="M22 58 q6 7 14 0" stroke-width="3"/>'+
+  '<rect x="90" y="48" width="26" height="30" rx="4"/><path d="M96 63 h14 M103 56 v14" stroke-width="3"/>'+
+  '<rect x="168" y="50" width="20" height="24" rx="4" stroke-dasharray="4 4" stroke-width="2.5"/>'+
+  '<path d="M126 92 h58" stroke-width="3"/><path d="M126 92 l8 -5 M126 92 l8 5 M184 92 l-8 -5 M184 92 l-8 5" stroke-width="3"/></svg>';
+PICS.contours = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<rect x="60" y="22" width="100" height="74" rx="4"/>'+
+  '<path d="M48 10 H172 V108 H48 Z" stroke-width="2.5" stroke-dasharray="6 6"/>'+
+  '<path d="M48 10 l10 -6 M48 10 l10 6" stroke-width="3"/>'+
+  '<path d="M96 52 q14 -14 28 0 q-14 14 -28 0 Z" stroke-width="3"/><circle cx="110" cy="52" r="4" fill="currentColor" stroke="none"/></svg>';
+PICS.blink_breath = '<svg viewBox="0 0 220 132" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+
+  '<path d="M48 44 q22 18 44 0 M70 53 v8 M56 50 l-6 7 M84 50 l6 7" stroke-width="3"/>'+
+  '<path d="M128 44 q22 18 44 0 M150 53 v8 M136 50 l-6 7 M164 50 l6 7" stroke-width="3"/>'+
+  '<path d="M55 100 q14 -12 28 0 t28 0 t28 0 t28 0" stroke-width="3" opacity=".65"/></svg>';
+
+/* ===================== домино (Барнс, гл. 10) ===================== */
+function pipXY(n){
+  const tl=[.26,.26], tr=[.74,.26], ml=[.26,.5], mr=[.74,.5], bl=[.26,.74], br=[.74,.74], c=[.5,.5];
+  return [[],[c],[tl,br],[tl,c,br],[tl,tr,bl,br],[tl,tr,c,bl,br],[tl,tr,ml,mr,bl,br]][n];
+}
+function dominoHTML(){
+  let h='<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center">';
+  for(let i=0;i<8;i++){
+    const a=Math.floor(Math.random()*7), b=Math.floor(Math.random()*7);
+    let svg='<svg width="44" height="86" viewBox="0 0 44 86"><rect x="1" y="1" width="42" height="84" rx="6" fill="#1c1c1c" stroke="#555"/><line x1="5" y1="43" x2="39" y2="43" stroke="#777" stroke-width="2"/>';
+    for(const [x,y] of pipXY(a)) svg+='<circle cx="'+(x*44)+'" cy="'+(y*40+2)+'" r="4.2" fill="#fff"/>';
+    for(const [x,y] of pipXY(b)) svg+='<circle cx="'+(x*44)+'" cy="'+(y*40+44)+'" r="4.2" fill="#fff"/>';
+    h+=svg+'</svg>';
+  }
+  return h+'</div>';
+}
+function redoDomino(){ const z=document.getElementById('dominozone'); if(z) z.innerHTML=dominoHTML(); }
+
 function renderChart(){
   const sc = document.getElementById('cscale').value;
   document.getElementById('chartzone').innerHTML = chartHTML(Number(sc));
@@ -594,7 +729,7 @@ function renderJournal(){
     const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     const l=S.log[k]||{}; const cls = l.m&&l.e?'full':(l.m||l.e?'half':'');
     html+='<div class="jday '+cls+'"><span class="m">'+d.getDate()+'</span><span>'+
-      (l.m?'☀':'')+(l.e?'🌙':'')+'</span></div>';
+      (l.m?'☀':'')+(l.d?'🌤':'')+(l.e?'🌙':'')+'</span></div>';
   }
   g.innerHTML=html;
   document.getElementById('jstats').innerHTML='Всего дней с занятиями: <b>'+total+'</b>';
