@@ -1,50 +1,55 @@
 name: Напоминания о тренировке зрения
 
+# GitHub запускает кроны с опозданием на часы (наблюдалось 4–7 ч), поэтому время
+# отправки НЕ привязано к крону: workflow стартует каждые 20 минут, а отправляет
+# только когда фактическое время в Лос-Анджелесе попало в окно:
+#   утро  06:30–07:29,  вечер 20:30–21:29 (переход на зимнее время учитывается сам).
+# От дублей защищает переменная репозитория REMINDER_STATE.
+# Публичный репозиторий — минуты Actions бесплатны.
+
 on:
   schedule:
-    # Время в UTC, минуты нарочно «некруглые»: кроны на :00/:30 GitHub в часы пик часто пропускает.
-    # На каждый слот два запуска — основной и резервный; от дублей защищает проверка ниже.
-    - cron: '33 13 * * *'  # утро (основной):  ~6:33 PDT / 5:33 PST
-    - cron: '3 14 * * *'   # утро (резервный): ~7:03 PDT
-    - cron: '37 3 * * *'   # вечер (основной): ~20:37 PDT / 19:37 PST
-    - cron: '7 4 * * *'    # вечер (резервный)
-  workflow_dispatch: {}     # ручной запуск для проверки
+    - cron: '*/20 * * * *'
+  workflow_dispatch: {}     # ручной запуск для проверки (шлёт сразу, без окна)
 
 permissions:
-  actions: read
+  actions: write   # чтение и запись переменной REMINDER_STATE
 
 jobs:
   remind:
     runs-on: ubuntu-latest
     steps:
-      - name: Отправить напоминание в Telegram
+      - name: Проверить окно и отправить
         env:
           TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PAGE_URL: ${{ vars.PAGE_URL }}
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           if [ -z "$TOKEN" ] || [ -z "$CHAT_ID" ]; then
             echo "Секреты TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не заданы — пропускаю."
             exit 0
           fi
-          H=$(date -u +%H)
-          if [ "$H" -ge 10 ]; then SLOT=morning; else SLOT=evening; fi
+          HM=$((10#$(TZ=America/Los_Angeles date +%H%M)))
+          D=$(TZ=America/Los_Angeles date +%F)
+          API="https://api.github.com/repos/${REPO}/actions/variables"
 
-          # Дедупликация: если сегодня в этом окне уже была успешная отправка по расписанию — выходим.
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
-            TODAY=$(date -u +%Y-%m-%d)
-            COUNT=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/reminder.yml/runs?event=schedule&status=success&created=%3E%3D${TODAY}" \
-              | jq --arg slot "$SLOT" --arg id "$GITHUB_RUN_ID" \
-                '[.workflow_runs[]
-                  | select((.id|tostring) != $id)
-                  | select(.conclusion == "success")
-                  | select((.run_started_at[11:13]|tonumber) as $h
-                      | if $slot == "morning" then $h >= 10 else $h < 10 end)
-                 ] | length')
-            if [ "${COUNT:-0}" -gt 0 ]; then
-              echo "В этом окне уже отправлено (резервный запуск) — пропускаю."
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "$HM" -lt 1200 ]; then SLOT=morning; else SLOT=evening; fi
+            KEY="manual-${D}-${HM}"
+            echo "Ручной запуск: слот $SLOT."
+          else
+            if [ "$HM" -ge 630 ] && [ "$HM" -le 729 ]; then SLOT=morning
+            elif [ "$HM" -ge 2030 ] && [ "$HM" -le 2129 ]; then SLOT=evening
+            else
+              echo "Сейчас $HM по Лос-Анджелесу — вне окон отправки, тихо выходим."
+              exit 0
+            fi
+            KEY="${D}-${SLOT}"
+            STATE=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" "${API}/REMINDER_STATE" | jq -r '.value // empty')
+            if [ "$STATE" = "$KEY" ]; then
+              echo "Сегодня в этом окне уже отправлено (${KEY}) — пропускаю."
               exit 0
             fi
           fi
@@ -59,8 +64,21 @@ jobs:
             --data-urlencode "chat_id=${CHAT_ID}" \
             --data-urlencode "text=${TEXT}")
           if echo "$RESP" | grep -q '"ok":true'; then
-            echo "Отправлено."
+            echo "Отправлено (${SLOT})."
           else
             echo "Ошибка Telegram API: $RESP"
             exit 1
           fi
+
+          # записать состояние (защита от дублей); при неудаче — только предупреждение
+          BODY="{\"name\":\"REMINDER_STATE\",\"value\":\"${KEY}\"}"
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' -X PATCH \
+            -H "Authorization: Bearer ${GH_TOKEN}" "${API}/REMINDER_STATE" -d "$BODY")
+          if [ "$CODE" = "404" ]; then
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer ${GH_TOKEN}" "${API}" -d "$BODY")
+          fi
+          case "$CODE" in
+            2*) echo "Состояние записано: ${KEY}" ;;
+            *)  echo "::warning::Не удалось записать REMINDER_STATE (HTTP ${CODE}) — возможны дубли в этом окне." ;;
+          esac
