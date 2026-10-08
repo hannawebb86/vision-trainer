@@ -79,8 +79,8 @@ label{font-size:.85rem; color:var(--muted); display:block; margin-top:8px}
 .view{display:none}
 .view.act{display:block}
 h3{font-size:1rem; margin:14px 0 4px}
-#view-info{--info-fs:14px}
-#view-info .card{scroll-margin-top:12px; font-size:var(--info-fs); line-height:1.75}
+#view-info{--info-fs:14px; --info-lh:2.5}
+#view-info .card{scroll-margin-top:12px; font-size:var(--info-fs); line-height:var(--info-lh)}
 #view-info p, #view-info li{font-size:1em; margin:7px 0}
 #view-info .muted{font-size:.92em}
 #view-info .note, #view-info .warn{font-size:.95em}
@@ -190,6 +190,11 @@ h3{font-size:1rem; margin:14px 0 4px}
       <button id="fsdown" onclick="infoFs(-1)" aria-label="Уменьшить шрифт">A−</button>
       <span id="fsval"></span>
       <button id="fsup" onclick="infoFs(1)" aria-label="Увеличить шрифт">A+</button>
+    </div>
+    <div class="fsctl">Межстрочный интервал:
+      <button id="lhdown" onclick="infoLh(-1)" aria-label="Уменьшить интервал">−</button>
+      <span id="lhval"></span>
+      <button id="lhup" onclick="infoLh(1)" aria-label="Увеличить интервал">+</button>
     </div>
   </div>
   <div class="card" id="info-main">
@@ -1027,6 +1032,18 @@ function infoFs(step){
   try{ localStorage.setItem('vt2_infofs', px); }catch(e){}
   applyInfoFs(px);
 }
+/* интервал — во сколько раз высота строки больше размера шрифта; шаг 0,25 */
+const LH_MIN=1.75, LH_MAX=3.5, LH_DEF=2.5, LH_STEP=0.25;
+function infoLh(step){
+  let lh = LH_DEF;
+  try{ lh = Number(localStorage.getItem('vt2_infolh')) || LH_DEF; }catch(e){}
+  lh = Math.min(LH_MAX, Math.max(LH_MIN, Math.round((lh+step*LH_STEP)*4)/4));
+  try{ localStorage.setItem('vt2_infolh', lh); }catch(e){}
+  document.getElementById('view-info').style.setProperty('--info-lh', lh);
+  document.getElementById('lhval').textContent = '×'+String(lh).replace('.', ',');
+  document.getElementById('lhdown').disabled = lh<=LH_MIN;
+  document.getElementById('lhup').disabled = lh>=LH_MAX;
+}
 
 /* ===================== навигация ===================== */
 function show(v, btn){
@@ -1036,7 +1053,7 @@ function show(v, btn){
   btn.classList.add('act');
   window.scrollTo(0,0);
 }
-renderToday(); renderChart(); renderFine(); renderJournal(); initSyncUI(); infoFs(0); doSync(false);
+renderToday(); renderChart(); renderFine(); renderJournal(); initSyncUI(); infoFs(0); infoLh(0); doSync(false);
 </script>
 
 <nav>
