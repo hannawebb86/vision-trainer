@@ -79,11 +79,20 @@ label{font-size:.85rem; color:var(--muted); display:block; margin-top:8px}
 .view{display:none}
 .view.act{display:block}
 h3{font-size:1rem; margin:14px 0 4px}
-#view-info p, #view-info li{font-size:.92rem; margin:6px 0}
+#view-info{--info-fs:14px}
+#view-info .card{scroll-margin-top:12px; font-size:var(--info-fs); line-height:1.75}
+#view-info p, #view-info li{font-size:1em; margin:7px 0}
+#view-info .muted{font-size:.92em}
+#view-info .note, #view-info .warn{font-size:.95em}
 #view-info ul{margin-left:0; padding-left:20px}
-#view-info h2{font-size:1.1rem; margin-bottom:4px}
-#view-info .card{scroll-margin-top:12px}
+#view-info h2{font-size:1.25em; margin-bottom:4px; line-height:1.4}
+#view-info h3{font-size:1.08em; line-height:1.4}
 .toc{display:flex; flex-wrap:wrap; gap:6px; padding:12px}
+#view-info .toc{line-height:1.4}
+.fsctl{display:flex; align-items:center; gap:8px; width:100%; margin-top:6px; font-size:.82rem; color:var(--muted)}
+.fsctl button{background:var(--card); border:1px solid var(--line); color:var(--ink); border-radius:8px;
+  font-family:inherit; padding:3px 12px; cursor:pointer; font-size:.9rem}
+.fsctl button:disabled{opacity:.4; cursor:default}
 .toc a{background:var(--accent-soft); color:var(--accent); text-decoration:none; border-radius:999px;
   padding:4px 12px; font-size:.82rem}
 .note{background:var(--accent-soft); border-radius:10px; padding:10px 12px; font-size:.88rem; margin:10px 0}
@@ -177,6 +186,11 @@ h3{font-size:1rem; margin:14px 0 4px}
     <a href="#info-screens">Экраны</a>
     <a href="#info-eyes">Если один глаз хуже</a>
     <a href="#info-settings">Настройки</a>
+    <div class="fsctl">Размер шрифта:
+      <button id="fsdown" onclick="infoFs(-1)" aria-label="Уменьшить шрифт">A−</button>
+      <span id="fsval"></span>
+      <button id="fsup" onclick="infoFs(1)" aria-label="Увеличить шрифт">A+</button>
+    </div>
   </div>
   <div class="card" id="info-main">
     <h2>Главное из книги</h2>
@@ -998,6 +1012,22 @@ function enableSync(){
 function disableSync(){ SY={}; saveSy(); syncMsg('Синхронизация отключена. Токен удалён с этого устройства, дневник остался.'); }
 function initSyncUI(){ if(SY.token) syncMsg(SY.last ? '✓ Включена, последняя синхронизация '+new Date(SY.last).toLocaleString() : 'Включена.'); }
 
+/* ===================== размер шрифта в Памятке ===================== */
+const FS_MIN=12, FS_MAX=20, FS_DEF=14;
+function applyInfoFs(px){
+  document.getElementById('view-info').style.setProperty('--info-fs', px+'px');
+  document.getElementById('fsval').textContent = px+' px';
+  document.getElementById('fsdown').disabled = px<=FS_MIN;
+  document.getElementById('fsup').disabled = px>=FS_MAX;
+}
+function infoFs(step){
+  let px = FS_DEF;
+  try{ px = Number(localStorage.getItem('vt2_infofs')) || FS_DEF; }catch(e){}
+  px = Math.min(FS_MAX, Math.max(FS_MIN, px+step));
+  try{ localStorage.setItem('vt2_infofs', px); }catch(e){}
+  applyInfoFs(px);
+}
+
 /* ===================== навигация ===================== */
 function show(v, btn){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('act'));
@@ -1006,7 +1036,7 @@ function show(v, btn){
   btn.classList.add('act');
   window.scrollTo(0,0);
 }
-renderToday(); renderChart(); renderFine(); renderJournal(); initSyncUI(); doSync(false);
+renderToday(); renderChart(); renderFine(); renderJournal(); initSyncUI(); infoFs(0); doSync(false);
 </script>
 
 <nav>
